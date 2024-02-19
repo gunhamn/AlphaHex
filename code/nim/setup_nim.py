@@ -1,17 +1,8 @@
-from agent_random import agent_random
-from game_nim import game_nim
+from agent_random import AgentRandom
+from game_nim import GameNim
+from agent_human import AgentHuman
 
-# class setup_nim
-
-# Variables:
-    # self.game
-    # self.agents = [agent1, agent2]
-
-# Functions:
-#   __init__(self, game, agents)
-#   playGame(self, verbose=True)
-
-class setup_nim:
+class SetupNim:
 
     def __init__(self, game, agents):
         self.game = game
@@ -27,16 +18,13 @@ class setup_nim:
         if verbose:
             print(f"Player {self.game.PlayerHasWon()} won!")
         return self.game.PlayerHasWon()
-    
-# main function
-
 
 def main():
-    game = game_nim()
+    game = GameNim()
     game.reset([15, 3])
-    agent1 = agent_random(1)
-    agent2 = agent_random(2)
-    setup = setup_nim(game, [agent1, agent2])
+    agent1 = AgentRandom(1)
+    agent2 = AgentHuman(2)
+    setup = SetupNim(game, [agent1, agent2])
     setup.playGame(verbose=True)
 
 main()

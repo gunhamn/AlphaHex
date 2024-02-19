@@ -1,20 +1,6 @@
-# class game_nim
-#   class game_nim
 
-# Variables:
-#   self.boardState
-#   self.playerTurn
 
-# Functions:
-#   __init__(self)
-#   reset(self, gameVariables=[N, K])
-#   update(self, move)
-#   getMoves(self)
-#   setBoardState(self, boardState, playerTurn)
-#   PlayerHasWon(self), returns 0 if no winner, 1 if player 1 wins, 2 if player 2 wins, and so on..
-#   printGameState(self)
-
-class game_nim:
+class GameNim:
     def __init__(self):
         self.boardState = None
         self.playerTurn = 0
