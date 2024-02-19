@@ -1,0 +1,2 @@
+# AlphaHex
+An AlphaGo Knock-Off project in the course AI Programming at NTNU, spring 2024.
