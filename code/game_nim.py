@@ -1,5 +1,3 @@
-
-
 class GameNim:
     def __init__(self):
         self.boardState = None
