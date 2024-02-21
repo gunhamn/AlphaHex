@@ -1,3 +1,4 @@
+import numpy as np
 from ANET import ANET
 from MCT_node import MctNode
 from game_nim import GameNim
@@ -10,7 +11,7 @@ class AgentMCT:
         self.game = game
         self.rolloutGame = game
         self.n_simulations = n_simulations
-        self.root = MctNode(boardState, playerNum)
+        self.root = MctNode(boardState, playerNum, game.getLegalMoves(boardState, playerNum))
         self.c = c
     
     def findLeaf(self):
@@ -30,29 +31,43 @@ class AgentMCT:
         or explored every time?
         """
         node = self.root
-        while len(node.children) > 0:
-            self.rolloutGame.setBoardState(node.boardState, node.playerNum)
-            legalMoves = self.rolloutGame.getMoves()
-            if len(legalMoves) > len(node.children):
-                return legalMoves[len(node.children)]
-            else:
-                node = max(node.children, key=lambda x: x.ucb(self.c))
+        while node.visitCount > 0:
+            node = max(node.children, key=lambda x: x.UCB(self.c))
+            """ Question:
+            Will this cause a bug when 2 childen has ucb == np.inf?"""
         return node
 
     def expandNode(self, node):
         """
         Question:
         How does the algorithm search the children
-        in a way that connects legas moves to nodes
+        in a way that connects legal moves to nodes
         and already existing children?
         """
-        pass
-        
-        while len(node.legalMoves) > 0:
-            node = max()
-        # result = ...
-        #backpropagate(self, node, result)
+        while node.playerHasWon == 0:
+            self.rolloutGame.setBoardState(node.boardState, node.playerNum)
+            # Implement ANET to make this line work
+            move = max(node.untriedMoves, key=lambda x: self.ANET.predict(node.boardState, x))
+            boardState, playerTurn, legalMoves, playerHasWon = self.rolloutGame.update(move)
+            childNode = MctNode(boardState, playerTurn, legalMoves, node, move, playerHasWon)
+            node.addChild(childNode) # This also remoce the move from untried moves
+            node = childNode
+        return node, playerHasWon
 
+    def backpropagate(self, node, playerHasWon):
+        while node is not None:
+            node.visitCount += 1
+            if node.playerNum == playerHasWon:
+                node.winCount += 1
+            node = node.parent
 
-    def backpropagate(self, node, result):
-        pass
+    def getD(self):
+        """
+        How to represent D?
+        Here it is a list of tuples.
+        """
+        #  D = distribution of visit counts in MCT along all arcs emanating from root
+        D = []
+        for child in self.root.children:
+            D.append(([child.move], child.visitCount))
+        return (self.root, D)

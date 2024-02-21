@@ -32,6 +32,7 @@ class GameNim:
             self.playerTurn = 1
         else:
             self.playerTurn += 1
+        return self.boardState, self.playerTurn, self.getMoves(), self.PlayerHasWon()
     
     def getMoves(self):
         moves = []
@@ -43,6 +44,9 @@ class GameNim:
     def setBoardState(self, boardState, playerTurn):
         self.boardState = boardState
         self.playerTurn = playerTurn
+    
+    def getBoardState(self):
+        return self.boardState, self.playerTurn
     
     def PlayerHasWon(self):
         if self.boardState[0] == 0:
