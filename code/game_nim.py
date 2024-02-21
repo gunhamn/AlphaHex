@@ -1,8 +1,19 @@
+"""
+This class should inherit from the Game class
+and implement the methods:
+- reset
+- update
+- getMoves
+- setBoardState
+- PlayerHasWon
+- printGameState
+"""
+
 class GameNim:
     def __init__(self):
         self.boardState = None
         self.playerTurn = 0
-        self.numPlayers = 2
+        self.playerCount = 2
 
     def reset(self, gameVariables=[15, 2]):
         # [N, K]
@@ -17,7 +28,7 @@ class GameNim:
             print(f"Player {self.playerTurn} takes {move} pieces")
         
         # Next player's turn
-        if self.playerTurn == self.numPlayers:
+        if self.playerTurn == self.playerCount:
             self.playerTurn = 1
         else:
             self.playerTurn += 1
@@ -37,7 +48,7 @@ class GameNim:
         if self.boardState[0] == 0:
             # The last player to take pieces won
             if self.playerTurn == 1:
-                return self.numPlayers
+                return self.playerCount
             else:
                 return self.playerTurn - 1
         else:
