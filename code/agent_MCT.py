@@ -25,10 +25,6 @@ class AgentMCT:
         Question:
         How does the algorithm deal with finding
         a node that is a final state of the game?
-
-        Question:
-        Should the legal moves be stored in the node
-        or explored every time?
         """
         node = self.root
         while node.visitCount > 0:
@@ -47,7 +43,7 @@ class AgentMCT:
         while node.playerHasWon == 0:
             self.rolloutGame.setBoardState(node.boardState, node.playerNum)
             # Implement ANET to make this line work
-            move = max(node.untriedMoves, key=lambda x: self.ANET.predict(node.boardState, x))
+            move = max(node.untriedMoves, key=lambda x: self.ANET.predict(node.boardState, node.playerNum, x))
             boardState, playerTurn, legalMoves, playerHasWon = self.rolloutGame.update(move)
             childNode = MctNode(boardState, playerTurn, legalMoves, node, move, playerHasWon)
             node.addChild(childNode) # This also remoce the move from untried moves
@@ -67,7 +63,8 @@ class AgentMCT:
         Here it is a list of tuples.
         """
         #  D = distribution of visit counts in MCT along all arcs emanating from root
-        D = []
+        D = np.array([])
         for child in self.root.children:
-            D.append(([child.move], child.visitCount))
-        return (self.root, D)
+            D = np.append(D, ([child.parentMove], child.visitCount))
+        return D
+        

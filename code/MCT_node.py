@@ -19,5 +19,6 @@ class MctNode:
             return self.winCount / self.visitCount + c * np.sqrt(np.log(self.parent.visitCount) / self.visitCount)
     
     def addChild(self, node):
+        """ This adds the child and remove the move from untriedMoves """
         self.children = np.append(self.children, node)
         self.untriedMoves.remove(node.parentMove)

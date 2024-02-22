@@ -10,17 +10,17 @@ and implement the methods:
 """
 
 class GameNim:
-    def __init__(self):
-        self.boardState = None
-        self.playerTurn = 0
-        self.playerCount = 2
+    def __init__(self, gameVariables=[15, 2], playerTurn=1, playerCount=2):
+        self.boardState = gameVariables
+        self.playerTurn = playerTurn
+        self.playerCount = playerCount
 
-    def reset(self, gameVariables=[15, 2]):
+    def reset(self, gameVariables=[15, 2], playerTurn=1):
         # [N, K]
         # N, the number of pieces on the board
         # K, the max number that a player can take on their turn
         self.boardState = gameVariables
-        self.playerTurn = 1
+        self.playerTurn = playerTurn
     
     def update(self, move, verbose=False):
         self.boardState[0] -= move
