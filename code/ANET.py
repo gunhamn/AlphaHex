@@ -13,8 +13,15 @@ move = max(node.untriedMoves, key=lambda x: self.ANET.predict(node.boardState, n
 Then ANET should have the method:
 predict(node.boardState, move)
 That returns the expected value of that move.
+
+Input:
+- len(boardState)
+Output:
+- len(totalLegalMoves)
+
+
 """
 
 class ANET:
-    def __init__(self) -> None:
+    def __init__(self, numInput, numOutput) -> None:
         pass
