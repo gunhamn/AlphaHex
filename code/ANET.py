@@ -22,6 +22,14 @@ Output:
 
 """
 
-class ANET:
-    def __init__(self, numInput, numOutput) -> None:
+import numpy as np
+
+""" Couldn't get imports to work.....
+import tensorflow as tf
+import torch
+import torch.nn as nn
+"""
+
+class ANET(nn.Module):
+    def __init__(self, numInput=1, numOutput=2) -> None:
         pass

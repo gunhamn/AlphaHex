@@ -23,6 +23,7 @@ class GameNim:
         self.playerTurn = playerTurn
     
     def update(self, move, verbose=False):
+        """ Not checking if the move is valid """
         self.boardState[0] -= move
         if verbose:
             print(f"Player {self.playerTurn} takes {move} pieces")
@@ -61,3 +62,18 @@ class GameNim:
     def printGameState(self):
         print(f"Player {self.playerTurn}'s turn")
         print(f"Pieces left: {self.boardState[0]}, max pick: {self.boardState[1]}")
+
+    def boardStateToANET(self, boardState):
+        """ Hex method:
+        Takes in a boardState and tranforms it
+        into input for the ANET.
+        """
+        return boardState[0]
+    
+    def ANETtoLegasMovesList(self, ANEToutput):
+        """ Hex method:
+        Takes in the ANET output and
+        tranforms it into a list of
+        all legal and illegal moves.
+        """
+        return ANEToutput
