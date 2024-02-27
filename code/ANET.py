@@ -16,13 +16,17 @@ That returns the expected value of that move.
 
 Input:
 - len(boardState)
+- the input is the state of the game, which includes the boardstate and which players turn it is
 Output:
-- len(totalLegalMoves)
+- len(totalLegalMoves) Not sure if it has to be legal?
+- Return a possibility distribution over the possible moves
 
+Need a saving and loading mechanism for the networks, so a parser 
 
 """
 
 import numpy as np
+import torch.nn as nn
 
 """ Couldn't get imports to work.....
 import tensorflow as tf
@@ -31,5 +35,14 @@ import torch.nn as nn
 """
 
 class ANET(nn.Module):
-    def __init__(self, numInput=1, numOutput=2) -> None:
-        pass
+    def __init__(self, numInput=2, numOutput=2) -> None:
+        super(ANET, self).__init__()
+        self.fc1 = nn.Linear(numInput, numOutput)  # Input layer: 2 input nodes, 2 output nodes
+        #Can add more layers here, hidden layers and so on using relu or tanH, and a sigmoid at the end?
+        #Remember to add the layers in the forward pass aswell
+        self.softmax = nn.Softmax(dim=1)  # Softmax layer
+
+    def forward(self, x):
+        x = self.fc1(x)  # Fully connected layer
+        x = self.softmax(x)  # Softmax layer
+        return x

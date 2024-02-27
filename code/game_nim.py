@@ -77,3 +77,18 @@ class GameNim:
         all legal and illegal moves.
         """
         return ANEToutput
+    
+    def actionOnState(self, action, board, player): #-> state
+        self.setBoardState(board, player)
+        self.update(action)
+        return [self.boardState, self.playerTurn]
+    
+    def isFinalState(self, board, player) -> int or None: # type: ignore
+        self.setBoardState(board, player)
+        if self.boardState[0] == 0:
+            if self.playerTurn == 1:
+                return 1
+            else:
+                return -1
+        else:
+            return None
