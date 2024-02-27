@@ -36,17 +36,15 @@ class mct:
         self.game.setBoardState(state.boardState, state.player)
         moves = self.game.getMoves()
         for i in range(len(moves)):
-            state.children.append(node(self.game.actionOnState(moves[i], state.boardState, state.player), i, state))
+            state.children.append(node(self.game.actionOnState(i, state.boardState, state.player), i, state))
         #return the first child since thats what the rollout will choose, can rather implement a random
         return state.children[0]
 
     #Rollout, randomly pick one child to rollout and give that to the neural network and continue until final state, return final value and child, state?
     def rollout(self, state: node) -> int:
-        while self.game.isFinalState(state.boardState, state.player)!=None:
+        while self.game.isFinalState(state.boardState, state.player)==None:
             action = np.argmax(self.net.forward(state.net))
-            self.game.setBoardState(state.boardState, state.player)
-            moves = self.game.getMoves()
-            state = node(self.game.actionOnState(moves[action], state.boardState, state.player))
+            state = node(self.game.actionOnState(action, state.boardState, state.player))
         return self.game.isFinalState(state.boardState, state.player)
     
     #Backprop, propogate the final value up the tree, and update the visited count 

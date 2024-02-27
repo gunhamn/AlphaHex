@@ -27,6 +27,8 @@ Need a saving and loading mechanism for the networks, so a parser
 
 import numpy as np
 import torch.nn as nn
+import torch.optim as optim
+import torch
 
 """ Couldn't get imports to work.....
 import tensorflow as tf
@@ -37,12 +39,49 @@ import torch.nn as nn
 class ANET(nn.Module):
     def __init__(self, numInput=2, numOutput=2) -> None:
         super(ANET, self).__init__()
-        self.fc1 = nn.Linear(numInput, numOutput)  # Input layer: 2 input nodes, 2 output nodes
+        self.fc1 = nn.Linear(numInput, 5)  # Input layer: 2 input nodes, 2 output nodes
         #Can add more layers here, hidden layers and so on using relu or tanH, and a sigmoid at the end?
+        self.fc2 = nn.Linear(5, numOutput)
         #Remember to add the layers in the forward pass aswell
         self.softmax = nn.Softmax(dim=1)  # Softmax layer
-
+        
+    #I have some issues with torch as i am not used to using it
     def forward(self, x):
-        x = self.fc1(x)  # Fully connected layer
+        x = torch.tensor(x, dtype=torch.float32)
+        x = nn.ReLU(self.fc1(x)) # Fully connected layer
+        x = nn.ReLU(self.fc2(x))
         x = self.softmax(x)  # Softmax layer
         return x
+    
+    def train(self, data, batch_size=10, num_epochs=100, learning_rate = 0.01) -> None:
+        criterion = nn.MSELoss()
+        optimizer = optim.SGD(self.parameters(), lr=learning_rate)
+        print(f"data: {data}")
+        for epoch in range(num_epochs):
+            # Randomly sample minibatch from replay buffer
+            minibatch = np.random.choice(data, size=batch_size, replace=False)
+            # Separate inputs and targets from minibatch cases
+            inputs = np.array([case[0] for case in minibatch])
+            targets = np.array([case[1] for case in minibatch])
+
+            # Convert inputs and targets to PyTorch tensors
+            inputs = torch.tensor(inputs, dtype=torch.float32)
+            targets = torch.tensor(targets, dtype=torch.float32)
+
+            # Zero the gradients
+            optimizer.zero_grad()
+
+            # Forward pass
+            outputs = self(inputs)
+
+            # Compute loss
+            loss = criterion(outputs, targets)
+
+            # Backpropagation
+            loss.backward()
+
+            # Update weights
+            optimizer.step()
+
+
+        pass

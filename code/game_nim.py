@@ -80,11 +80,13 @@ class GameNim:
     
     def actionOnState(self, action, board, player): #-> state
         self.setBoardState(board, player)
-        self.update(action)
+        moves = self.getMoves()
+        self.update(moves[action])
         return [self.boardState, self.playerTurn]
     
     def isFinalState(self, board, player) -> int or None: # type: ignore
         self.setBoardState(board, player)
+        print(f"boardstate: {self.boardState[0]}")
         if self.boardState[0] == 0:
             if self.playerTurn == 1:
                 return 1
