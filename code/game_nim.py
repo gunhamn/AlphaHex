@@ -8,14 +8,15 @@ and implement the methods:
 - PlayerHasWon
 - printGameState
 """
+import copy
 
 class GameNim:
-    def __init__(self, gameVariables=[15, 2], playerTurn=1, playerCount=2):
+    def __init__(self, gameVariables=[5, 2], playerTurn=1, playerCount=2):
         self.boardState = gameVariables
         self.playerTurn = playerTurn
         self.playerCount = playerCount
 
-    def reset(self, gameVariables=[15, 2], playerTurn=1):
+    def reset(self, gameVariables=[5, 2], playerTurn=1):
         # [N, K]
         # N, the number of pieces on the board
         # K, the max number that a player can take on their turn
@@ -43,8 +44,8 @@ class GameNim:
         return moves
     
     def setBoardState(self, boardState, playerTurn):
-        self.boardState = boardState
-        self.playerTurn = playerTurn
+        self.boardState = copy.deepcopy(boardState)
+        self.playerTurn = copy.deepcopy(playerTurn)
     
     def getBoardState(self):
         return self.boardState, self.playerTurn
@@ -79,10 +80,21 @@ class GameNim:
         return ANEToutput
     
     def actionOnState(self, action, board, player): #-> state
+        print(f"In action input: {board}, {player}")
         self.setBoardState(board, player)
         moves = self.getMoves()
-        self.update(moves[action])
-        return [self.boardState, self.playerTurn]
+        #remember to check if it ever takes illeagal moves
+        if isinstance(moves, int):
+            self.update(moves)
+        else:
+            self.update(moves[action])
+        boardState = self.boardState
+        playerTurn = self.playerTurn
+        print(f"In action input: {board}, {player}")
+        self.setBoardState(board, player)
+        print(f"In action: {self.boardState}, {self.playerTurn}")
+        return [boardState, playerTurn]
+    
     
     def isFinalState(self, board, player) -> int or None: # type: ignore
         self.setBoardState(board, player)

@@ -3,6 +3,7 @@ from game_nim import GameNim
 from MCT import mct
 import numpy as np
 from agent_human import AgentHuman
+import torch
 class rl_system:
     #def __init__(self, net:ANET, tree: mct, game: GameNim) -> None:
     def __init__(self, game: GameNim) -> None:
@@ -23,15 +24,20 @@ class rl_system:
             s_init = [0,0]
             s_init[0], s_init[1] = self.game.getBoardState()
             self.tree = mct(state=s_init, game = self.game, network=self.net)
+            print(f"tree root before while: {self.tree.root.boardState}")
             while self.game.isFinalState(self.state[0], self.state[1]) == None:
                 print('ITS IN WHILE')
                 for sim in range(number_sim):
                     self.tree.sim()
+                print(f'sim is done for {game}')
                 D = self.tree.distribution()
-                RBUF = RBUF.append([[self.tree.root.boardState, self.tree.root.player], D])
+                print(f'Distribution : {D}')
+                print(f"RBUF: {RBUF}")
+                RBUF.append([[self.tree.root.boardState[0], self.tree.root.player], D])
                 action = np.argmax(D)
+                print(f"IT GETS HERE")
                 self.state = self.game.actionOnState(action, self.state[0], self.state[1])
-                self.tree.root = self.tree.root.children[action]
+                self.tree.root = self.tree.root.children[action] #not here 
             self.net.train(RBUF)
             if game % saveI == 0:
                 #save ANET for tournament play
@@ -47,7 +53,9 @@ def playGame(game: GameNim, network: ANET, verbose=True):
             state=[0,0]
             state[0], state[1] = game.getBoardState()
             if game.playerTurn == 1:
-                action = np.argmax(network.forward(state))
+                netState= [state[0][0], state[1]]
+                print(f"state: {network.forward(netState)}")
+                action = torch.argmax(network.forward(netState))
                 game.update(moves[action], verbose=verbose)
             else:
                 move = agent.makeMove(game, moves)
@@ -57,10 +65,12 @@ def playGame(game: GameNim, network: ANET, verbose=True):
         return game.PlayerHasWon()
     
 def main():
-    game = GameNim()
+    print("RUN BEGINS")
+    game = GameNim(gameVariables=[5,2])
     system = rl_system(game)
-    net = system.train(2, 10, 100)
-    winner = playGame(game, net)
+    net = system.train(2, 10, 3)
+    testgame = GameNim(gameVariables=[5,2])
+    winner = playGame(testgame, net)
 
 
 

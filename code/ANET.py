@@ -29,6 +29,7 @@ import numpy as np
 import torch.nn as nn
 import torch.optim as optim
 import torch
+import matplotlib.pyplot as plt
 
 """ Couldn't get imports to work.....
 import tensorflow as tf
@@ -39,30 +40,47 @@ import torch.nn as nn
 class ANET(nn.Module):
     def __init__(self, numInput=2, numOutput=2) -> None:
         super(ANET, self).__init__()
-        self.fc1 = nn.Linear(numInput, 5)  # Input layer: 2 input nodes, 2 output nodes
-        #Can add more layers here, hidden layers and so on using relu or tanH, and a sigmoid at the end?
-        self.fc2 = nn.Linear(5, numOutput)
-        #Remember to add the layers in the forward pass aswell
-        self.softmax = nn.Softmax(dim=1)  # Softmax layer
+        self.flatten = nn.Flatten()
+        self.linear_relu_stack = nn.Sequential(
+            nn.Linear(numInput, 10),
+            nn.ReLU(),
+            nn.Linear(10, 15),
+            nn.ReLU(),
+            nn.Linear(15, 10),
+            nn.ReLU(),
+            nn.Linear(10, numOutput),
+            nn.Softmax(dim=0)
+        )
         
     #I have some issues with torch as i am not used to using it
-    def forward(self, x):
+    def forward(self, x, moves = None):#take in legal moves?
         x = torch.tensor(x, dtype=torch.float32)
-        x = nn.ReLU(self.fc1(x)) # Fully connected layer
-        x = nn.ReLU(self.fc2(x))
-        x = self.softmax(x)  # Softmax layer
-        return x
+        #x = self.flatten(x)
+        logits = self.linear_relu_stack(x)
+        if moves!=None:
+            set1 = set(moves)
+
+            # Iterate over the indices of list2
+            for i in range(len(logits)):
+                # Check if the index+1 is in list1
+                if i + 1 not in set1:
+                    # If not, set the value to 0
+                    logits[i] = 0
+        logits = logits / torch.sum(logits, dim=0, keepdim=True)
+        #print(f"logits: {logits}")
+        return logits
     
-    def train(self, data, batch_size=10, num_epochs=100, learning_rate = 0.01) -> None:
+    def train(self, data, batch_size=10, num_epochs=1000, learning_rate = 0.0001) -> None:
         criterion = nn.MSELoss()
-        optimizer = optim.SGD(self.parameters(), lr=learning_rate)
+        optimizer = optim.Adam(self.parameters(), lr=learning_rate)
         print(f"data: {data}")
+        lossArray=[]
         for epoch in range(num_epochs):
             # Randomly sample minibatch from replay buffer
-            minibatch = np.random.choice(data, size=batch_size, replace=False)
+            #minibatch = np.random.choice(data, size=batch_size, replace=False)
             # Separate inputs and targets from minibatch cases
-            inputs = np.array([case[0] for case in minibatch])
-            targets = np.array([case[1] for case in minibatch])
+            inputs = np.array([case[0] for case in data])
+            targets = np.array([case[1] for case in data])
 
             # Convert inputs and targets to PyTorch tensors
             inputs = torch.tensor(inputs, dtype=torch.float32)
@@ -76,12 +94,17 @@ class ANET(nn.Module):
 
             # Compute loss
             loss = criterion(outputs, targets)
+            print(f"loss: {loss}")
+            lossArray.append(loss.item())
 
             # Backpropagation
             loss.backward()
 
             # Update weights
             optimizer.step()
-
+        #print(f"lossArray: {lossArray}")
+        #lossArray = lossArray.detach().numpy()
+        plt.plot(lossArray)
+        plt.show()
 
         pass
