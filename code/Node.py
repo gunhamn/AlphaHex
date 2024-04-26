@@ -19,12 +19,12 @@ class node:
     
     def exploration(self):
         if self.visited == 0:
-            return np.sqrt(2)
+            return np.array([np.sqrt(2),np.sqrt(2)])
         #c = 1
         return np.sqrt(np.log(self.visited)/(1+self.childVisited)) 
     
     def update(self, value, action):
-        print(f"action: {action}")
+        #print(f"action: {action}")
         self.visited+=1
         self.eval+=value
         if action is not None:

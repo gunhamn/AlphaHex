@@ -40,6 +40,7 @@ import torch.nn as nn
 class ANET(nn.Module):
     def __init__(self, numInput=2, numOutput=2) -> None:
         super(ANET, self).__init__()
+        self.lossarray=[]
         self.flatten = nn.Flatten()
         self.linear_relu_stack = nn.Sequential(
             nn.Linear(numInput, 10),
@@ -70,17 +71,25 @@ class ANET(nn.Module):
         #print(f"logits: {logits}")
         return logits
     
-    def train(self, data, batch_size=10, num_epochs=1000, learning_rate = 0.0001) -> None:
-        criterion = nn.MSELoss()
+    def train(self, data, batch_size=10, num_epochs=5000, learning_rate = 0.0001) -> None:
+        criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(self.parameters(), lr=learning_rate)
-        print(f"data: {data}")
+        #print(f"data: {data}")
         lossArray=[]
+        if batch_size > len(data):
+            # If batch size is larger than buffer size, reduce batch size
+            batch_size = len(data)
+        #print(data)
+        indices = np.random.choice(len(data), batch_size, replace=False)
+        minibatch = [data[idx] for idx in indices]
+        #minibatch = data
+        #print(f"MINIBATCH: {minibatch}")
         for epoch in range(num_epochs):
             # Randomly sample minibatch from replay buffer
             #minibatch = np.random.choice(data, size=batch_size, replace=False)
             # Separate inputs and targets from minibatch cases
-            inputs = np.array([case[0] for case in data])
-            targets = np.array([case[1] for case in data])
+            inputs = np.array([case[0] for case in minibatch])
+            targets = np.array([case[1] for case in minibatch])
 
             # Convert inputs and targets to PyTorch tensors
             inputs = torch.tensor(inputs, dtype=torch.float32)
@@ -91,10 +100,12 @@ class ANET(nn.Module):
 
             # Forward pass
             outputs = self(inputs)
+            #print(f"outputs: {torch._softmax(outputs, dim=0, half_to_float=False)}")
 
             # Compute loss
             loss = criterion(outputs, targets)
-            print(f"loss: {loss}")
+            #print(f"loss: {loss}")
+            self.lossarray.append(loss.item())
             lossArray.append(loss.item())
 
             # Backpropagation
@@ -103,8 +114,12 @@ class ANET(nn.Module):
             # Update weights
             optimizer.step()
         #print(f"lossArray: {lossArray}")
+        """plt.plot(lossArray)
+        plt.show()"""
         #lossArray = lossArray.detach().numpy()
-        plt.plot(lossArray)
-        plt.show()
 
         pass
+
+    def plot(self):
+        plt.plot(self.lossarray)
+        plt.show()

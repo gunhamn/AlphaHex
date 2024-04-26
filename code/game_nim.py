@@ -80,29 +80,31 @@ class GameNim:
         return ANEToutput
     
     def actionOnState(self, action, board, player): #-> state
-        print(f"In action input: {board}, {player}")
+        #print(f"In action input: {board}, {player}")
         self.setBoardState(board, player)
         moves = self.getMoves()
         #remember to check if it ever takes illeagal moves
-        if isinstance(moves, int):
+        """if isinstance(moves, int):
             self.update(moves)
-        else:
-            self.update(moves[action])
+        else:"""
+        self.update(moves[action])
         boardState = self.boardState
         playerTurn = self.playerTurn
-        print(f"In action input: {board}, {player}")
+        #print(f"In action input: {board}, {player}")
         self.setBoardState(board, player)
-        print(f"In action: {self.boardState}, {self.playerTurn}")
+        #print(f"In action: {self.boardState}, {self.playerTurn}")
         return [boardState, playerTurn]
     
     
     def isFinalState(self, board, player) -> int or None: # type: ignore
         self.setBoardState(board, player)
-        print(f"boardstate: {self.boardState[0]}")
+        #print(f"boardstate: {self.boardState[0]}")
         if self.boardState[0] == 0:
-            if self.playerTurn == 1:
+            if self.playerTurn == 2:
+                #print(f"is final state: {self.playerTurn-1}")
                 return 1
             else:
+                #print(f"is final state: {self.playerTurn+1}")
                 return -1
         else:
             return None
