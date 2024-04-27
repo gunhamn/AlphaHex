@@ -24,10 +24,11 @@ class rl_system:
             self.game.reset(gameVariables=[5,2])
             self.state=[0,0]
             self.state[0], self.state[1] = self.game.getBoardState()
+            print(f"s_init: {self.state}")
             self.tree = mct(state=self.state, game = self.game, network=self.net)
             #print(f"eps: {eps/(game+1)}")
             #print(f"tree root before while: {self.tree.root.boardState}")
-            while self.game.isFinalState(self.state[0], self.state[1]) == None:
+            while self.game.isFinalState(self.state[0], self.state[1]) == None: #Trenge ikke ta inn parametre
                 #print('ITS IN WHILE')
                 for sim in range(number_sim):
                     self.tree.sim(eps=eps/(game+1))
