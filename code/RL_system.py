@@ -21,7 +21,7 @@ class rl_system:
         for game in range(number_games):
             print(f'its in new game {game}')
             #RBUF = []
-            self.game.reset(gameVariables=[5,2])
+            self.game.reset(gameVariables=[2,2])
             self.state=[0,0]
             self.state[0], self.state[1] = self.game.getBoardState()
             print(f"s_init: {self.state}")
@@ -139,21 +139,25 @@ def main():
     
     game = GameNim(gameVariables=[5,2])
     system = rl_system(game)
-    net = system.train(saveI=100, number_games=5, number_sim=20, eps=1)
+    net = system.train(saveI=5, number_games=11, number_sim=3, eps=1)
     #net.plot()
     #testgame = GameNim(gameVariables=[5,2])
     #winner = playGame(testgame, net)
     
+    playerN = ANET()
+    print(playerN.simpleForward([2, 1]))
+    
     player0 = ANET()
-    print(player0.forward([2, 1], [1, 2]))
-    
-    player1 = ANET()
-    player1 = torch.load('code/networks/network_0')
-    print(player1.forward([2, 1], [1, 2]))
-    
-    player2 = ANET()
-    player2 = torch.load('code/networks/network_200')
-    print(player2.forward([2, 1],[1, 2]))
+    player0 = torch.load('code/networks/network_0')
+    print(f'code/networks/network_0 {player0.simpleForward([2, 1])}')
+
+    player5 = ANET()
+    player5 = torch.load('code/networks/network_5')
+    print(f'code/networks/network_5 {player5.simpleForward([2, 1])}')
+
+    player200 = ANET()
+    player200 = torch.load('code/networks/network_200')
+    print(f'code/networks/network_200 {player200.simpleForward([2, 1])}')
     # winner = playGamesAI(1000, player1=player1, player2=player2, verbose=True)
     # print(winner)
     

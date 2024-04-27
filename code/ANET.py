@@ -30,6 +30,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torch
 import matplotlib.pyplot as plt
+import tensorflow as tf
 
 """ Couldn't get imports to work.....
 import tensorflow as tf
@@ -71,6 +72,11 @@ class ANET(nn.Module):
         #print(f"logits: {logits}")
         return logits
     
+    def simpleForward(self, x):
+        x = torch.tensor(x, dtype=torch.float32)
+        logits = self.linear_relu_stack(x)
+        return logits
+
     def train(self, data, batch_size=10, num_epochs=5000, learning_rate = 0.0001) -> None:
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(self.parameters(), lr=learning_rate)
@@ -91,6 +97,9 @@ class ANET(nn.Module):
             inputs = np.array([case[0] for case in minibatch])
             targets = np.array([case[1] for case in minibatch])
 
+            # print(f"inputs: {inputs}")
+            # print(f"targets: {targets}")
+
             # Convert inputs and targets to PyTorch tensors
             inputs = torch.tensor(inputs, dtype=torch.float32)
             targets = torch.tensor(targets, dtype=torch.float32)
@@ -100,11 +109,13 @@ class ANET(nn.Module):
 
             # Forward pass
             outputs = self(inputs)
+            # print(f"outputs: {outputs}")
             #print(f"outputs: {torch._softmax(outputs, dim=0, half_to_float=False)}")
 
             # Compute loss
             loss = criterion(outputs, targets)
-            #print(f"loss: {loss}")
+
+            # print(f"loss: {loss}")
             self.lossarray.append(loss.item())
             lossArray.append(loss.item())
 
@@ -123,3 +134,27 @@ class ANET(nn.Module):
     def plot(self):
         plt.plot(self.lossarray)
         plt.show()
+
+
+
+
+if __name__ == "__main__":
+    net = ANET()
+    data = [[[2, 1], [0, 1]]]*2000
+    # print(data)
+    net.train(data)
+    print(net.simpleForward([2, 1]))
+    
+    model = tf.keras.Sequential([
+        tf.keras.layers.Dense(10, input_shape=(2,), activation='relu'),
+        tf.keras.layers.Dense(15, activation='relu'),
+        tf.keras.layers.Dense(10, activation='relu'),
+        tf.keras.layers.Dense(2, activation='softmax')
+    ])
+    data = np.array(data)
+    x = data[:, 0, :]
+    y = data[:, 1, :]
+    model.compile(optimizer='adam', loss='kl_divergence', metrics=['accuracy'])
+    model.fit(x, y, epochs=5)
+    print(model.predict(np.array([[2, 1]])))
+
