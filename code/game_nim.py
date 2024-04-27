@@ -97,7 +97,9 @@ class GameNim:
     
     
     def isFinalState(self, board, player) -> int or None: # type: ignore
+
         self.setBoardState(board, player)
+        
         #print(f"boardstate: {self.boardState[0]}")
         if self.boardState[0] == 0:
             if self.playerTurn == 2:
