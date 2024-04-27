@@ -4,7 +4,7 @@ class node:
         self.boardState= state[0]
         self.player = state[1]
         self.children = [] #should contain nodes this is okey, i use append
-        self.childVisited = np.zeros(2) #this is hardcoded right now
+        self.childVisited = np.zeros(2) #this is hardcoded right now - change to maximum moves for hex???
         self.parent = parent
         self.visited = 0
         self.eval = 0
