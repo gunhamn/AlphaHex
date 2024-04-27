@@ -24,9 +24,7 @@ class rl_system:
             self.game.reset(gameVariables=[5,2])
             self.state=[0,0]
             self.state[0], self.state[1] = self.game.getBoardState()
-            s_init = [0,0]
-            s_init[0], s_init[1] = self.game.getBoardState()
-            self.tree = mct(state=s_init, game = self.game, network=self.net)
+            self.tree = mct(state=self.state, game = self.game, network=self.net)
             #print(f"eps: {eps/(game+1)}")
             #print(f"tree root before while: {self.tree.root.boardState}")
             while self.game.isFinalState(self.state[0], self.state[1]) == None:
@@ -46,6 +44,7 @@ class rl_system:
                 self.state = self.game.actionOnState(action, self.state[0], self.state[1])
                 self.tree.root = self.tree.root.children[action] #not here
                 #break
+            print(f"RBUF: {RBUF}")
             self.net.train(RBUF)
             #RBUF=[]
             if game % saveI == 0:
@@ -136,18 +135,27 @@ def main():
     print("RUN BEGINS")
     """networks_dir = os.path.join(os.path.dirname(__file__), 'networks')
     print(networks_dir)"""
+    
     game = GameNim(gameVariables=[5,2])
     system = rl_system(game)
-    net = system.train(100, 100, 100, 1)
-    net.plot()
+    net = system.train(saveI=100, number_games=5, number_sim=20, eps=1)
+    #net.plot()
     #testgame = GameNim(gameVariables=[5,2])
     #winner = playGame(testgame, net)
+    
+    player0 = ANET()
+    print(player0.forward([2, 1], [1, 2]))
+    
     player1 = ANET()
     player1 = torch.load('code/networks/network_0')
+    print(player1.forward([2, 1], [1, 2]))
+    
     player2 = ANET()
     player2 = torch.load('code/networks/network_200')
-    winner = playGamesAI(1000, player1=player1, player2=player2, verbose=False)
-    print(winner)
+    print(player2.forward([2, 1],[1, 2]))
+    # winner = playGamesAI(1000, player1=player1, player2=player2, verbose=True)
+    # print(winner)
+    
 
 
 

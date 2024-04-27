@@ -17,6 +17,7 @@ class mct:
     #tree policy, return leaf node
     def tree_policy(self, state: node) -> node:
         #first check if it has children
+        print(f"Tree policy, boardstate:{state.boardState}, player: {state.player}")
         if len(state.children) == 0 or self.game.isFinalState(state.boardState, state.player)!=None:
             return state
         #then check if its player 1 or 2
@@ -36,7 +37,8 @@ class mct:
 
             #maximum player
             # action = np.argmax(Q(s_t, a) + u(s_t, a))
-            #print(state.Q + state.exploration())
+            # print(state.Q + state.exploration())
+            print(f"p1: argmax of: {state.Q + state.exploration()}")
             a = np.argmax(state.Q + state.exploration())
             #What we want is the correct child node
             #update is move
@@ -44,6 +46,7 @@ class mct:
         else:
             #minimum player
             #action = np.argmin(Q(s_t, a) - u(s_t, a))
+            print(f"p2: argmin of: {state.Q + state.exploration()}")
             a = np.argmin(state.Q - state.exploration())
         #print(f"tree_policy action {a}")
         state = self.tree_policy(state.children[a])
@@ -58,7 +61,7 @@ class mct:
         #print(f"moves expansion: {moves}")
         #print(f"expansion_1: {self.root.boardState}")
         #print(f"boardSTate in expansion {self.game.getBoardState()}")
-        for i in range(len(moves)):
+        for i in range(len(moves)): # change to "for move in moves:"
             state.children.append(node(self.game.actionOnState(i, state.boardState, state.player), i, state))
             #print(f"expansion_2: {self.root.boardState}")
         #return the first child since thats what the rollout will choose, can rather implement a random
@@ -72,6 +75,9 @@ class mct:
             #print(self.game.getMoves())
             #print(f"stateNet: {state.net}, stones: {state.boardState[0]}, player: {state.player}")
             action = torch.argmax(self.net.forward(state.net, self.game.getMoves() ))
+            
+            print(f"rollout, state: {state.boardState}, player: {state.player}")
+            print(f"torch.argmax: {self.net.forward(state.net, self.game.getMoves())}, action: remove {action+1}")
             #print(f"before action state: {state.boardState}")
             #print(f"action {action}")
             #print(f"rollout, state: {state.boardState}, chosen action: {action}, player: {state.player}")
@@ -99,12 +105,17 @@ class mct:
     #does it need to take in the neural network? to do the rollout 
 
     def sim(self, eps):
-        """print('TREE:')
-        self.print_tree(self.root)"""
-        self.eps=eps
+
+        #print('TREE:')
+        #self.print_tree(self.root)
+        self.eps=eps # ikke i bruk
         #self.print_tree(self.root)
         #print(f"root_insim: {self.root.boardState}")
+        
+        # check om denne gör noe
         self.game.setBoardState(self.root.boardState, self.root.player)
+        # check om denne gör noe
+        print(f"New simulation, boardstate: {self.root.boardState}, player: {self.root.player}")
         leaf = self.tree_policy(self.root)
         #print(f"leaf: {leaf.boardState}")
         #print(f"root_after_tree_policy: {self.root.boardState}")
@@ -114,6 +125,7 @@ class mct:
         value = self.rollout(rolloutChild)
         #print(f"root_after_rollout: {self.root.boardState}")
         self.backprop(rolloutChild, value)
+        print(f"Simulation ended with value: {value}\n")
         
 
     #getting the distribution of visited count from root
