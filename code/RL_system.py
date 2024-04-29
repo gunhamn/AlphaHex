@@ -6,6 +6,9 @@ import numpy as np
 from agent_human import AgentHuman
 import torch
 import os
+from tensorflow import keras
+from keras.models import load_model
+
 class rl_system:
     #def __init__(self, net:ANET, tree: mct, game: GameNim) -> None:
     def __init__(self, game: GameNim) -> None:
@@ -22,7 +25,7 @@ class rl_system:
         for game in range(number_games):
             print(f'its in new game {game}')
             #RBUF = []
-            self.game.reset(gameVariables=[2,2])
+            self.game.reset(gameVariables=[5,2])
             self.state=[0,0]
             self.state[0], self.state[1] = self.game.getBoardState()
             print(f"s_init: {self.state}")
@@ -139,9 +142,9 @@ def main():
     """networks_dir = os.path.join(os.path.dirname(__file__), 'networks')
     print(networks_dir)"""
     
-    game = GameNim(gameVariables=[5,2])
-    system = rl_system(game)
-    net = system.train(saveI=5, number_games=11, number_sim=3, eps=1)
+    #game = GameNim(gameVariables=[5,2])
+    #system = rl_system(game)
+    #net = system.train(saveI=50, number_games=1, number_sim=10, eps=1)
     #net.plot()
     #testgame = GameNim(gameVariables=[5,2])
     #winner = playGame(testgame, net)
@@ -156,6 +159,12 @@ def main():
     player5 = ANET()
     player5 = torch.load('code/networks/network_5')
     print(f'code/networks/network_5 {player5.simpleForward([2, 1])}')
+
+    # player10 = load_model('code/networks/network_10.keras', custom_objects={'ANET_tf': ANET_tf})
+    player10 = ANET_tf()
+    player10.build((None, 2))
+    player10.load_weights('code/networks/network_10.keras')
+    print(f'code/networks/network_10 {player10.predict(np.array([2, 1]))}')
 
     player200 = ANET()
     player200 = torch.load('code/networks/network_200')

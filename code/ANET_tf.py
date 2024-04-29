@@ -26,6 +26,7 @@ class ANET_tf(tf.keras.Model):
         
     def forward(self, x, moves = None):
         x = np.array(x, dtype=np.float32)
+        print(f'x: {x}')
         if x.ndim == 1:
             x = np.expand_dims(x, 0)
         logits = self.predict(x)
