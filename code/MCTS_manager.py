@@ -2,9 +2,10 @@ import numpy as np
 from game_nim import GameNim
 from agent_MCT import AgentMCT
 from ANET import ANET
+from ANET_tf import ANET_tf
 
 class MctsManager:
-    def __init__(self, game=GameNim, MCT=AgentMCT, ANET=ANET):
+    def __init__(self, game=GameNim, MCT=AgentMCT, ANET=ANET_tf):
         self.game = game
         self.MCT = MCT
         self.ANET = ANET

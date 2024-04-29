@@ -1,4 +1,5 @@
 from ANET import ANET
+from ANET_tf import ANET_tf
 from game_nim import GameNim
 from MCT import mct
 import numpy as np
@@ -17,7 +18,7 @@ class rl_system:
     def train(self, saveI, number_games, number_sim, eps):
         #RBUF = np.array([]) #this is sketchy, just use list?
         RBUF = []
-        self.net= ANET(numInput=2, numOutput=2)
+        self.net= ANET_tf(numInput=2, numOutput=2)
         for game in range(number_games):
             print(f'its in new game {game}')
             #RBUF = []
@@ -50,7 +51,8 @@ class rl_system:
             #RBUF=[]
             if game % saveI == 0:
                 #save ANET for tournament play
-                torch.save(self.net, f"code/networks/network_{game}")
+                self.net.save(f"code/networks/network_{game}.keras")
+                #torch.save(self.net, f"code/networks/network_{game}")
                 pass
         with open('output.txt', 'w') as file:
             # Iterate over the list and write each element to the file
@@ -59,7 +61,7 @@ class rl_system:
        # print(f"data: {RBUF}")
         return self.net
 
-def playGame(game: GameNim, network: ANET, verbose=True):
+def playGame(game: GameNim, network: ANET_tf, verbose=True):
         agent = AgentHuman(2)
         while game.PlayerHasWon() == 0:
             if verbose:
@@ -70,7 +72,7 @@ def playGame(game: GameNim, network: ANET, verbose=True):
             if game.playerTurn == 1:
                 netState= [state[0][0], 1]
                 #print(f"state: {network.forward(netState, moves=moves)}")
-                action = torch.argmax(network.forward(netState))
+                action = np.argmax(network.forward(netState))
                 game.update(moves[action], verbose=verbose)
             else:
                 move = agent.makeMove(game, moves)
@@ -79,7 +81,7 @@ def playGame(game: GameNim, network: ANET, verbose=True):
             print(f"Player {game.PlayerHasWon()} won!")
         return game.PlayerHasWon()
 
-def playGamesAI(numberGames: int, player1: ANET, player2: ANET, verbose=True):
+def playGamesAI(numberGames: int, player1: ANET_tf, player2: ANET_tf, verbose=True):
         wincount = [0,0]
         for i in range(numberGames):
             game = GameNim(gameVariables=[5,2])
@@ -93,12 +95,12 @@ def playGamesAI(numberGames: int, player1: ANET, player2: ANET, verbose=True):
                     if game.playerTurn == 1:
                         netState= [state[0][0], 1]
                         #print(f"state: {network.forward(netState, moves=moves)}")
-                        action = torch.argmax(player1.forward(netState))
+                        action = np.argmax(player1.forward(netState))
                         game.update(moves[action], verbose=verbose)
                     else:
                         netState= [state[0][0], 2]
                         #print(f"state: {network.forward(netState, moves=moves)}")
-                        action = torch.argmax(player2.forward(netState))
+                        action = np.argmax(player2.forward(netState))
                         game.update(moves[action], verbose=verbose)
                 if verbose:
                     print(f"Player {game.PlayerHasWon()} won!")
@@ -113,12 +115,12 @@ def playGamesAI(numberGames: int, player1: ANET, player2: ANET, verbose=True):
                     if game.playerTurn == 1:
                         netState= [state[0][0], 1]
                         #print(f"state: {network.forward(netState, moves=moves)}")
-                        action = torch.argmax(player2.forward(netState))
+                        action = np.argmax(player2.forward(netState))
                         game.update(moves[action], verbose=verbose)
                     else:
                         netState= [state[0][0], 2]
                         #print(f"state: {network.forward(netState, moves=moves)}")
-                        action = torch.argmax(player1.forward(netState))
+                        action = np.argmax(player1.forward(netState))
                         game.update(moves[action], verbose=verbose)
                 if verbose:
                     print(f"Player {game.PlayerHasWon()} won!")

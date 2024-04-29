@@ -77,7 +77,7 @@ class ANET(nn.Module):
         logits = self.linear_relu_stack(x)
         return logits
 
-    def train(self, data, batch_size=10, num_epochs=5000, learning_rate = 0.0001) -> None:
+    def train(self, data, batch_size=10, num_epochs=50, learning_rate = 0.001) -> None:
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(self.parameters(), lr=learning_rate)
         #print(f"data: {data}")
@@ -144,6 +144,7 @@ if __name__ == "__main__":
     # print(data)
     net.train(data)
     print(net.simpleForward([2, 1]))
+    net.plot()
     
     model = tf.keras.Sequential([
         tf.keras.layers.Dense(10, input_shape=(2,), activation='relu'),

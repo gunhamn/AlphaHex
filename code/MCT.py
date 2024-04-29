@@ -74,7 +74,7 @@ class mct:
         while self.game.isFinalState(state.boardState, state.player)==None:
             #print(self.game.getMoves())
             #print(f"stateNet: {state.net}, stones: {state.boardState[0]}, player: {state.player}")
-            action = torch.argmax(self.net.forward(state.net, self.game.getMoves() ))
+            action = np.argmax(self.net.forward(state.net, self.game.getMoves() ))
             
             print(f"rollout, state: {state.boardState}, player: {state.player}")
             print(f"torch.argmax: {self.net.forward(state.net, self.game.getMoves())}, action: remove {action+1}")
@@ -139,8 +139,13 @@ class mct:
         total = np.sum(arr)
         if total!=0:
             arr = arr/total"""
-        dist = F.softmax(torch.tensor(self.root.childVisited), dim=0)
-        dist = np.array(dist)
+        def softmax(x):
+            e_x = np.exp(x - np.max(x))  # Subtract max for numerical stability
+            return e_x / e_x.sum(axis=0)
+
+        # dist = F.softmax(torch.tensor(self.root.childVisited), dim=0)
+        dist = softmax(self.root.childVisited)
+        #     dist = np.array(dist)
         #print(dist)
         return list(dist)
         #return list(self.root.childVisited)
