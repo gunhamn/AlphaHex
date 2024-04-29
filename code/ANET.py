@@ -72,7 +72,7 @@ class ANET(nn.Module):
         return logits
     
     def train(self, data, batch_size=10, num_epochs=5000, learning_rate = 0.0001) -> None:
-        criterion = nn.CrossEntropyLoss()
+        criterion = nn.KLDivLoss()
         optimizer = optim.Adam(self.parameters(), lr=learning_rate)
         #print(f"data: {data}")
         lossArray=[]
@@ -82,7 +82,7 @@ class ANET(nn.Module):
         #print(data)
         indices = np.random.choice(len(data), batch_size, replace=False)
         minibatch = [data[idx] for idx in indices]
-        #minibatch = data
+        minibatch = data
         #print(f"MINIBATCH: {minibatch}")
         for epoch in range(num_epochs):
             # Randomly sample minibatch from replay buffer
@@ -103,7 +103,7 @@ class ANET(nn.Module):
             #print(f"outputs: {torch._softmax(outputs, dim=0, half_to_float=False)}")
 
             # Compute loss
-            loss = criterion(outputs, targets)
+            loss = criterion(torch.log(outputs), targets)
             #print(f"loss: {loss}")
             self.lossarray.append(loss.item())
             lossArray.append(loss.item())

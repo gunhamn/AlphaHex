@@ -1,17 +1,18 @@
 import numpy as np
+#Tror denne e good
 class node:
-    def __init__(self, state, action=None, parent=None) -> None:
-        self.boardState= state[0]
-        self.player = state[1]
+    def __init__(self, state, maxMoves=2, action=None, parent=None) -> None:
+        self.boardState= state
+       #self.player = state[1]
         self.children = [] #should contain nodes this is okey, i use append
-        self.childVisited = np.zeros(2) #this is hardcoded right now - change to maximum moves for hex???
+        self.childVisited = np.zeros(maxMoves) #this is hardcoded right now - change to maximum moves for hex???
         self.parent = parent
         self.visited = 0
         self.eval = 0
-        self.Q = np.zeros(2) #all these empty lists are a PROBLEM, need possible actions to get correct length
+        self.Q = np.zeros(maxMoves) #all these empty lists are a PROBLEM, need possible actions to get correct length
         self.action = action
         #what it should give neural net, should be fixed
-        self.net = np.array([state[0][0], state[1]])
+        self.net = state
         pass
         #children = np.array(node, node, node) where length equals possible moves to make
         #state
