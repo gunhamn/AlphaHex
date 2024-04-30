@@ -8,6 +8,9 @@ from agent_human import AgentHuman
 import torch
 import keras
 import os
+from tensorflow import keras
+from keras.models import load_model
+
 class rl_system:
     def __init__(self, game: GameNim) -> None:
         self.net = None
@@ -142,6 +145,12 @@ def main():
     player5 = ANET()
     player5 = torch.load('code/networks/network_5')
     print(f'code/networks/network_5 {player5.simpleForward([1, 2])}')
+
+    # player10 = load_model('code/networks/network_10.keras', custom_objects={'ANET_tf': ANET_tf})
+    player10 = ANET_tf()
+    player10.build((None, 2))
+    player10.load_weights('code/networks/network_10.keras')
+    print(f'code/networks/network_10 {player10.predict(np.array([2, 1]))}')
 
     player200 = ANET()
     player200 = torch.load('code/networks/network_200')
