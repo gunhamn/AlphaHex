@@ -16,10 +16,10 @@ class mctAgent():
             for sim in range(self.number_sim):
                 self.tree.sim()
             D = self.tree.distribution()
-            #print(f"distribution: {D}")
+            print(f"distribution: {D}")
             action = np.argmax(D)
             #print(f"action: {action}, actual action: {self.tree.root.children[action].action}")
-            game.update(move=self.tree.root.children[action].action)
+            game.update(move=action)
 
 class randomAgent():
         def __init__(self) -> None:
@@ -35,6 +35,7 @@ def tournament(player1, player2, game:GameHex, numberGames:int):
             print(f'Game {g}, winCount: {winCount}')
             game.reset()
             while game.isFinalState()==None:
+                game.printGameState()
                 if game.boardState[0]==1:
                     player1.makeMove(game)
                     #print("Player 1 has made a move")
@@ -55,15 +56,15 @@ def tournament(player1, player2, game:GameHex, numberGames:int):
 
 if __name__ == "__main__":
     print("RUNSTART")
-    game = GameHex(boardSize=7)
-    mctsPlayer = mctAgent(numer_sim=100)
+    game = GameHex(boardSize=3)
+    mctsPlayer = mctAgent(numer_sim=50)
     randomPlayer = randomAgent()
     #print(game.getMoves())
-    win1 = tournament(player1=mctsPlayer, player2=randomPlayer, game=game, numberGames=10)
-    game = GameHex(boardSize=7)
-    mctsPlayer = mctAgent(numer_sim=100)
+    win1 = tournament(player1=mctsPlayer, player2=randomPlayer, game=game, numberGames=100)
+    game = GameHex(boardSize=3)
+    mctsPlayer = mctAgent(numer_sim=50)
     randomPlayer = randomAgent()
-    win2 = tournament(player1=randomPlayer, player2=mctsPlayer, game=game, numberGames=10)
+    win2 = tournament(player1=randomPlayer, player2=mctsPlayer, game=game, numberGames=100)
     print(win1)
     print(win2)
     pass

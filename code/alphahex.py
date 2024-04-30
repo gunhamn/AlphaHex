@@ -160,6 +160,7 @@ class GameHex (Game):
     
     def printGameState(self):
         #Print state to get overview, here the board needs to be printed
+        print(f"Player {self.boardState[0]}'s turn")
         elements = self.boardState[1:]
         grid = [elements[i*self.boardsize:i*self.boardsize+self.boardsize] for i in range(self.boardsize)]
 

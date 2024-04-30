@@ -121,12 +121,15 @@ class mct:
         #dist = softmax(self.root.childVisited)
         dist = tf.nn.softmax(self.root.childVisited)
         dist = np.array(dist)
+        result= [0]*self.game.maxMoves
+        for i in range(len(dist)):
+            result[self.root.children[i].action]=dist[i]
         """result = [0]*self.game.maxMoves
         
         for i in range(len(self.root.children)):
             if self.root.children[i]."""
         #print(dist)
-        return list(dist)
+        return list(result)
         #return list(self.root.childVisited)
     
     def print_tree(self, node, depth=0):
