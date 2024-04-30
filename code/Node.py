@@ -2,7 +2,6 @@ import numpy as np
 #Tror denne e good
 class node:
     def __init__(self, state, action=None, parent=None, maxMoves=2) -> None:
-        print(f"NODE CREATED: {state}, maxmoves: {maxMoves}")
         self.boardState= state
         self.maxMoves = maxMoves
        #self.player = state[1]
@@ -38,7 +37,6 @@ class node:
         if action is not None:
             for i in range(len(self.children)):
                 if self.children[i].action == action:
-                    print(f"child action: {self.children[i].action}, child i: {i}")
                     action=i
             self.childVisited[action]+=1 #Next step
             self.Q[action]=self.eval/self.childVisited[action]

@@ -133,10 +133,10 @@ def main():
     print(playerN.simpleForward([5, 1]))
     playerN.load("code/networks/network_100.keras")
     print(playerN.simpleForward([5, 1]))"""
-    playerN.model = keras.models.load_model('code/networks/network_50.keras')
+    playerN.model = keras.models.load_model('code/networks/network_5.keras')
     print(playerN.simpleForward([1, 5]))
     player1 = ANET_tf()
-    player1.model = keras.models.load_model('code/networks/network_100.keras')
+    player1.model = keras.models.load_model('code/networks/network_10.keras')
     print(player1.simpleForward([1, 5]))
     """player0 = ANET()
     player0 = torch.load('code/networks/network_0')

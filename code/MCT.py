@@ -105,10 +105,8 @@ class mct:
         # check om denne gör noe
         #print(f"New simulation, boardstate: {self.root.boardState}, player: {self.root.player}")
         leaf = self.tree_policy(self.root)
-        print(f"leaf: {leaf.boardState}")
         #print(f"root_after_tree_policy: {self.root.boardState}")
         rolloutChild = self.expansion(leaf)
-        print(f"rolloutChild: {rolloutChild.boardState}")
         #print(f"root_after_expansion: {self.root.boardState}")
         value = self.rollout(rolloutChild)
         #print(f"root_after_rollout: {self.root.boardState}")

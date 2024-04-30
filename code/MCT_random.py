@@ -88,20 +88,20 @@ class mct:
     #does it need to take in the neural network? to do the rollout 
 
     def sim(self):
-        print("Start of sim")
+        #print("Start of sim")
 
         """print('TREE:')
         self.print_tree(self.root)"""
         # check om denne gör noe
         self.game.setBoardState(self.root.boardState)
-        print(f"root: {self.root.boardState}")
+        #print(f"root: {self.root.boardState}")
         # check om denne gör noe
         leaf = self.tree_policy(self.root)
-        print(f"leaf: {leaf.boardState}")
+        #print(f"leaf: {leaf.boardState}")
         rolloutChild = self.expansion(leaf)
-        print(f"rolloutChild: {rolloutChild.boardState}")
+        #print(f"rolloutChild: {rolloutChild.boardState}")
         value = self.rollout(rolloutChild)
-        print("rollout done")
+        #print("rollout done")
         self.backprop(rolloutChild, value)
         
 
