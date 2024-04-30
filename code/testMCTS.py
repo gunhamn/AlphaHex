@@ -56,15 +56,15 @@ def tournament(player1, player2, game:GameHex, numberGames:int):
 
 if __name__ == "__main__":
     print("RUNSTART")
-    game = GameHex(boardSize=3)
-    mctsPlayer = mctAgent(numer_sim=50)
+    game = GameHex(boardSize=5)
+    mctsPlayer = mctAgent(numer_sim=1500)
     randomPlayer = randomAgent()
     #print(game.getMoves())
-    win1 = tournament(player1=mctsPlayer, player2=randomPlayer, game=game, numberGames=100)
-    game = GameHex(boardSize=3)
-    mctsPlayer = mctAgent(numer_sim=50)
+    win1 = tournament(player1=mctsPlayer, player2=randomPlayer, game=game, numberGames=10)
+    game = GameHex(boardSize=5)
+    mctsPlayer = mctAgent(numer_sim=1500)
     randomPlayer = randomAgent()
-    win2 = tournament(player1=randomPlayer, player2=mctsPlayer, game=game, numberGames=100)
+    win2 = tournament(player1=randomPlayer, player2=mctsPlayer, game=game, numberGames=10)
     print(win1)
     print(win2)
     pass

@@ -1,8 +1,9 @@
 from ANET import ANET
 from gameNim import GameNim
+from alphahex import GameHex
 from ANET_tf import ANET_tf
 #from game_nim import GameNim
-from MCT import mct
+from MCT_random import mct
 import numpy as np
 from agent_human import AgentHuman
 import torch
@@ -12,7 +13,7 @@ from tensorflow import keras
 from keras.models import load_model
 
 class rl_system:
-    def __init__(self, game: GameNim) -> None:
+    def __init__(self, game: GameHex) -> None:
         self.net = None
         self.tree = None
         self.game = game
@@ -21,13 +22,13 @@ class rl_system:
 
     def train(self, saveI, number_games, number_sim, eps):
         RBUF = []
-        self.net= ANET_tf(numInput=2, numOutput=2)
+        self.net= ANET_tf(numInput=self.game.maxMoves+1, numOutput=self.game.maxMoves)
         for game in range(number_games):
             print(f'its in new game {game}')
             #RBUF = []
             self.game.reset()
             self.state= self.game.getBoardState()
-            self.tree = mct(state=self.state, game = self.game, network=self.net)
+            self.tree = mct(state=self.state, game = GameHex(self.game.boardsize, playerTurn=self.game.boardState[0]), network=self.net)
             while self.game.isFinalState(self.state) == None: #Trenge ikke ta inn parametre
                 for sim in range(number_sim):
                     self.tree.sim()
@@ -35,7 +36,12 @@ class rl_system:
                 RBUF.append([self.tree.root.boardState, D])
                 action = np.argmax(D)
                 self.state = self.game.actionOnState(action, self.state)
-                self.tree.root = self.tree.root.children[action] #not here
+                chosenChild=None
+                for child in self.tree.root.children:
+                    if child.action == action:
+                        chosenChild = child
+                self.tree.root = chosenChild
+            #print(f"RBUF: {RBUF.shape}")
             self.net.train(RBUF)
             if (game+1) % saveI == 0:
                 #save ANET for tournament play
@@ -121,23 +127,28 @@ def main():
     """networks_dir = os.path.join(os.path.dirname(__file__), 'networks')
     print(networks_dir)"""
     
-    """game = GameNim(gameVariables=5)
+    """game = GameHex(boardSize=4)
     system = rl_system(game)
-    net = system.train(saveI=5, number_games=100, number_sim=1000, eps=1)
+    net = system.train(saveI=5, number_games=10, number_sim=100, eps=1)
     net.plot()"""
     #testgame = GameNim(gameVariables=[5,2])
     #winner = playGame(testgame, net)
-    
-    playerN = ANET_tf()
-    """print(playerN)
+    player5 = ANET_tf()
+    player5.model = keras.models.load_model('code/networks/network_5.keras')
+    print(player5.forward([2, 0, 0, 0, 0, 0, 0, 1, 1, 2, 0, 0, 0, 0, 0, 0, 0]))
+    player10 = ANET_tf()
+    player10.model = keras.models.load_model('code/networks/network_10.keras')
+    print(player10.forward([2, 0, 0, 0, 0, 0, 0, 1, 1, 2, 0, 0, 0, 0, 0, 0, 0]))
+    """playerN = ANET_tf()
+    print(playerN)
     print(playerN.simpleForward([5, 1]))
     playerN.load("code/networks/network_100.keras")
-    print(playerN.simpleForward([5, 1]))"""
+    print(playerN.simpleForward([5, 1]))
     playerN.model = keras.models.load_model('code/networks/network_5.keras')
     print(playerN.simpleForward([1, 5]))
     player1 = ANET_tf()
     player1.model = keras.models.load_model('code/networks/network_10.keras')
-    print(player1.simpleForward([1, 5]))
+    print(player1.simpleForward([1, 5]))"""
     """player0 = ANET()
     player0 = torch.load('code/networks/network_0')
     print(f'code/networks/network_0 {player0.simpleForward([1, 2])}')

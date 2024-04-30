@@ -13,8 +13,9 @@ import torch.nn as nn
 """
 
 class ANET_tf(tf.keras.Model):
-    def __init__(self, numInput=2, numOutput=2):
+    def __init__(self, numInput=17, numOutput=16):
         super(ANET_tf, self).__init__()
+        self.numInput = numInput
         self.lossarray = []
         self.model = tf.keras.Sequential([
             tf.keras.layers.Flatten(),
@@ -27,24 +28,28 @@ class ANET_tf(tf.keras.Model):
         self.weights = self.load_weights(filepath=filepath)
         
     def forward(self, x, moves = None):
-        x = np.array(x, dtype=np.float32)
+        x = np.array(x).reshape(1, self.numInput)
+        """ x = np.array(x, dtype=np.float32)
         print(f'x: {x}')
         if x.ndim == 1:
-            x = np.expand_dims(x, 0)
-        logits = self.predict(x)
-        print(f"predictions: {logits}")
+            x = np.expand_dims(x, 0)"""
+        #print(f'x: {x}')
+        logits = self.predict(x, verbose=False)
+        #print(f"predictions: {logits}, shape: {np.shape(logits)}")
+        #print(f"moves: {moves}")
 
         if moves!=None:
             set1 = set(moves)
 
             # Iterate over the indices of list2
-            for i in range(len(logits)):
+            for i in range(len(logits[0])):
                 # Check if the index+1 is in list1
-                if i + 1 not in set1:
+                if i not in set1:
                     # If not, set the value to 0
-                    logits[i] = 0
-        logits = logits / np.sum(logits, axis=0, keepdims=True)
-        print(f"logits: {logits}")
+                    logits[0][i] = 0
+            #print(f"logits before norm: {logits}")
+            logits[0] = logits[0] / np.sum(logits[0], axis=0, keepdims=True)
+        #print(f"logits: {logits}")
         return logits
     
     def call(self, inputs):
@@ -61,17 +66,22 @@ class ANET_tf(tf.keras.Model):
         self.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
                      loss='kl_divergence',  # Assuming label encoding
                      metrics=['accuracy'])
-        data = np.array(data)
-        x = data[:, 0, :]
-        x = np.reshape(x, (-1, 2))
-        y = data[:, 1, :]
-        y = np.reshape(y, (-1, 2))
-        print(f"Shape of x: {x.shape}")  # Debugging line
+        print(f"data: {data}")
+        case = np.array([item[0] for item in data])
+        target = np.array([item[1] for item in data])
+        x=case
+        y=target
+        #data = np.array(data)
+        #x = data[:, 0, :]
+        #x = np.reshape(x, (-1, 2))
+        #y = data[:, 1, :]
+        #y = np.reshape(y, (-1, 2))
+        """print(f"Shape of x: {x.shape}")  # Debugging line
         print(f'x: {x}')
         print(f"Shape of y: {y.shape}")  # Debugging line
-        print(f'y: {y}')
+        print(f'y: {y}')"""
         history = self.fit(x, y, epochs=num_epochs, batch_size=batch_size, verbose=1)
-        self.lossarray = history.history['loss']
+        self.lossarray.append(history.history['loss'])
 
     def plot(self):
         plt.plot(self.lossarray)

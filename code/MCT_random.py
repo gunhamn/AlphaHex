@@ -8,10 +8,11 @@ import torch.nn.functional as F
 import tensorflow as tf
 import random
 class mct:
-    def __init__(self, state, game: GameHex) -> None:
+    def __init__(self, state, game: GameHex, network: ANET_tf) -> None:
         self.game = game
         self.game.setBoardState(state)
         self.root = node(state, maxMoves=len(game.getMoves()))
+        self.net = network
 
         pass
 
@@ -64,9 +65,10 @@ class mct:
         #print('IN ROLLOUT')
         while self.game.isFinalState(state.boardState)==None:
             #print(f"possible moves: {self.game.getMoves()}")
-
-            action = np.random.choice(self.game.getMoves())
-            
+            if self.net ==None:
+                action = np.random.choice(self.game.getMoves())
+            else:
+                action = np.argmax(self.net.forward(state.boardState, self.game.getMoves() ))
             #print(f"action: {action}")
             #action = np.argmax(self.net.forward(state.boardState, self.game.getMoves() ))
             state = node(self.game.actionOnState(action, state.boardState),maxMoves=len(self.game.getMoves())-1)
