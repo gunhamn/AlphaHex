@@ -1,24 +1,24 @@
 #Emily sin incorporation av Monte Carlo tre
 from Node import node
 import numpy as np
-from gameNim import GameNim
+from alphahex import GameHex
 from ANET_tf import ANET_tf
 import torch
 import torch.nn.functional as F
 import tensorflow as tf
 import random
 class mct:
-    def __init__(self, state, game: GameNim, network: ANET_tf, eps:float = 1) -> None:
-        self.root = node(state)
+    def __init__(self, state, game: GameHex) -> None:
         self.game = game
-        self.net = network
-        self.epsilion = eps
+        self.game.setBoardState(state)
+        self.root = node(state, maxMoves=len(game.getMoves()))
+
         pass
 
     #tree policy, return leaf node
     def tree_policy(self, state: node) -> node:
+        #print(f"tree_policy state: {state.boardState}")
         #first check if it has children
-        #print(f"Tree policy, boardstate:{state.boardState}, player: {state.player}")
         if len(state.children) == 0 or self.game.isFinalState(state.boardState)!=None:
             return state
         #then check if its player 1 or 2
@@ -27,29 +27,24 @@ class mct:
         if len(state.children)==1:
             state = self.tree_policy(state.children[0])
             return state
-        
-        """ random_number = random.random()
-        #print(random_number)
-        if random_number < self.epsilion:
-                a=random.randint(0, 1)"""
 
         if state.boardState[0] == 1:
             
 
             #maximum player
-            # action = np.argmax(Q(s_t, a) + u(s_t, a))
-            # print(state.Q + state.exploration())
-            #print(f"p1: argmax of: {state.Q + state.exploration()}")
+            #print(state.Q + state.exploration())
             a = np.argmax(state.Q + state.exploration())
             #What we want is the correct child node
             #update is move
             #getBoardstate to get the updated state
         else:
             #minimum player
-            #action = np.argmin(Q(s_t, a) - u(s_t, a))
-            #print(f"p2: argmin of: {state.Q + state.exploration()}")
             a = np.argmin(state.Q - state.exploration())
-        #print(f"tree_policy action {a}")
+        for i in range(len(state.children)):
+            """if state.children[i].action==a:
+                a=i"""
+            #print(f"child: {state.children[i].boardState}")
+        #print(f"action: {a}")
         state = self.tree_policy(state.children[a])
         return state
 
@@ -59,22 +54,22 @@ class mct:
         moves = self.game.getMoves()
         if moves == []:
             return state
-        #print(f"moves expansion: {moves}")
-        #print(f"expansion_1: {self.root.boardState}")
-        #print(f"boardSTate in expansion {self.game.getBoardState()}")
-        for i in range(len(moves)): # change to "for move in moves:"
-            state.children.append(node(self.game.actionOnState(i, state.boardState), i, state))
-            #print(f"expansion_2: {self.root.boardState}")
-        #return the first child since thats what the rollout will choose, can rather implement a random
-        #print(f"children expanded: {state.children}")
-        #print(f"child picked: {np.random.choice(state.children)}")
+        if len(state.children)==0:
+            for move in moves: # change to "for move in moves:"
+                state.children.append(node(self.game.actionOnState(move, state.boardState), move, state, maxMoves=len(self.game.getMoves())-1))
         return np.random.choice(state.children)
 
     #Rollout, randomly pick one child to rollout and give that to the neural network and continue until final state, return final value and child, state?
     def rollout(self, state: node) -> int:
+        #print('IN ROLLOUT')
         while self.game.isFinalState(state.boardState)==None:
-            action = np.argmax(self.net.forward(state.boardState, self.game.getMoves() ))
-            state = node(self.game.actionOnState(action, state.boardState))
+            #print(f"possible moves: {self.game.getMoves()}")
+
+            action = np.random.choice(self.game.getMoves())
+            
+            #print(f"action: {action}")
+            #action = np.argmax(self.net.forward(state.boardState, self.game.getMoves() ))
+            state = node(self.game.actionOnState(action, state.boardState),maxMoves=len(self.game.getMoves())-1)
         return self.game.isFinalState(state.boardState)
     
     #Backprop, propogate the final value up the tree, and update the visited count 
@@ -93,35 +88,26 @@ class mct:
     #does it need to take in the neural network? to do the rollout 
 
     def sim(self):
+        print("Start of sim")
 
         """print('TREE:')
         self.print_tree(self.root)"""
-        #self.eps=eps # ikke i bruk
-        #self.print_tree(self.root)
-        #print(f"root_insim: {self.root.boardState}")
-        
         # check om denne gör noe
         self.game.setBoardState(self.root.boardState)
+        print(f"root: {self.root.boardState}")
         # check om denne gör noe
-        #print(f"New simulation, boardstate: {self.root.boardState}, player: {self.root.player}")
         leaf = self.tree_policy(self.root)
         print(f"leaf: {leaf.boardState}")
-        #print(f"root_after_tree_policy: {self.root.boardState}")
         rolloutChild = self.expansion(leaf)
         print(f"rolloutChild: {rolloutChild.boardState}")
-        #print(f"root_after_expansion: {self.root.boardState}")
         value = self.rollout(rolloutChild)
-        #print(f"root_after_rollout: {self.root.boardState}")
+        print("rollout done")
         self.backprop(rolloutChild, value)
-        #print(f"Simulation ended with value: {value}\n")
         
 
     #getting the distribution of visited count from root
     def distribution(self):
         #should be normalized
-        #print(f'Q: {self.root.Q}')
-        #arr = np.array(self.root.childVisited)
-        #torch.softmax(self.root.Q)
         """print(self.root.Q)
         arr = np.array(self.root.Q)
         total = np.sum(arr)
@@ -135,6 +121,10 @@ class mct:
         #dist = softmax(self.root.childVisited)
         dist = tf.nn.softmax(self.root.childVisited)
         dist = np.array(dist)
+        """result = [0]*self.game.maxMoves
+        
+        for i in range(len(self.root.children)):
+            if self.root.children[i]."""
         #print(dist)
         return list(dist)
         #return list(self.root.childVisited)

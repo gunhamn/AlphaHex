@@ -12,6 +12,7 @@
 """
 from cell import Cell
 from game import Game
+import copy
 
 class GameHex (Game):
     def __init__(self, boardSize=7, playerTurn=1, playerCount=2):
@@ -20,7 +21,7 @@ class GameHex (Game):
         self.boardState = self.initializeBoard(boardSize, playerTurn)
         self.playerTurn = playerTurn
         self.playerCount = playerCount
-
+        self.maxMoves = self.boardsize * self.boardsize
     def initializeBoard(self, size, player):
         board = [player]
         for i in range(size*size):
@@ -47,24 +48,26 @@ class GameHex (Game):
                 if "Top" in node.pos and "Left" in node.pos:
                     node.neigbors.append(grid[row][col+1])
                     node.neigbors.append(grid[row +1][col])
-                    node.neigbors.append(grid[row +1][col+1])
+                    #node.neigbors.append(grid[row +1][col+1])
                 elif "Top" in node.pos and "Right" in node.pos:
                     node.neigbors.append(grid[row][col-1])
                     node.neigbors.append(grid[row +1][col])
+                    node.neigbors.append(grid[row +1][col-1])
                 elif "Top" in node.pos:
                     node.neigbors.append(grid[row][col+1])
                     node.neigbors.append(grid[row][col-1])
                     node.neigbors.append(grid[row+1][col])
-                    node.neigbors.append(grid[row+1][col+1])
+                    node.neigbors.append(grid[row+1][col-1])
                 elif "Bot" in node.pos and "Left" in node.pos:
                     node.neigbors.append(grid[row][col+1])
                     node.neigbors.append(grid[row - 1][col])
+                    node.neigbors.append(grid[row - 1][col+1])
                 elif "Bot" in node.pos and "Right" in node.pos:
                     node.neigbors.append(grid[row][col-1])
                     node.neigbors.append(grid[row-1][col])
-                    node.neigbors.append(grid[row-1][col-1])
+                    #node.neigbors.append(grid[row-1][col-1])
                 elif "Bot" in node.pos:
-                    node.neigbors.append(grid[row-1][col-1])
+                    node.neigbors.append(grid[row-1][col+1])
                     node.neigbors.append(grid[row][col-1])
                     node.neigbors.append(grid[row][col+1])
                     node.neigbors.append(grid[row-1][col])
@@ -72,21 +75,21 @@ class GameHex (Game):
                     node.neigbors.append(grid[row+1][col])
                     node.neigbors.append(grid[row-1][col])
                     node.neigbors.append(grid[row][col+1])
-                    node.neigbors.append(grid[row+1][col+1])
+                    node.neigbors.append(grid[row-1][col+1])
                 elif "Right" in node.pos:
                     node.neigbors.append(grid[row+1][col])
                     node.neigbors.append(grid[row-1][col])
                     node.neigbors.append(grid[row][col-1])
-                    node.neigbors.append(grid[row-1][col-1])
+                    node.neigbors.append(grid[row+1][col-1])
                 elif "Center" in node.pos:
                     node.neigbors.append(grid[row+1][col])
                     node.neigbors.append(grid[row-1][col])
                     node.neigbors.append(grid[row][col-1])
                     node.neigbors.append(grid[row][col+1])
-                    node.neigbors.append(grid[row-1][col-1])
-                    node.neigbors.append(grid[row+1][col+1])
+                    node.neigbors.append(grid[row-1][col+1])
+                    node.neigbors.append(grid[row+1][col-1])
 
-                print(f"Node: {node.pos}, neighbors: {len(node.neigbors)}")
+                #print(f"Node: {node.pos}, neighbors: {len(node.neigbors)}")
 
                 
 
@@ -98,7 +101,7 @@ class GameHex (Game):
 
     def update(self, move):
         #Updates the board and game based on move
-        if self.playerTurn==1:
+        if self.boardState[0]==1:
             self.boardState[move+1].value = 1
             self.playerTurn = 2
             self.boardState[0] = 2 #vettkje om dette ska ver en del
@@ -109,14 +112,21 @@ class GameHex (Game):
         pass
 
     def getMoves(self):
+        #self.printGameState()
+        #print(self.boardState)
         #gives legal moves to make on the board
-        indices_of_zeros = [index for index, value in enumerate(self.boardState) if value == 0]
-        return indices_of_zeros
+        indices = [i for i, node in enumerate(self.boardState[1:]) if node.value == 0]
+        #print(indices)
+        return indices
 
-    def setBoardState(self, player, board):
-        self.boardState=self.setBoard(newBoard=board, player=player)
+    def setBoardState(self, board):
+        self.boardState=self.setBoard(newBoard=board[1:], player=board[0])
         #set the boardstate
         pass
+    """ def setBoardState(self, board):
+        self.boardState=copy.deepcopy(board)
+        #set the boardstate
+        pass"""
 
     def setBoard(self, newBoard, player):
         board=[player]
@@ -133,6 +143,15 @@ class GameHex (Game):
             board.append(new_cell)
         self.adding_neigbors(board)
         return board
+    
+    def actionOnState(self, action, board): #-> state
+        #print(f"board input: {board}")
+        self.setBoardState(board)
+        self.update(action)
+        boardState = self.getBoardState()
+        self.setBoardState(board)
+        #print(f"boardstate: {boardState}")
+        return boardState
 
     
     def PlayerHasWon(self):
@@ -176,7 +195,12 @@ class GameHex (Game):
 
         print(result)
 
-        
+    def getBoardState(self):
+        state = [self.boardState[0]]
+        for node in self.boardState[1:]:
+            state.append(node.value)
+        return state
+
 
     def boardStateToANET(self, boardState):
         """ Hex method:
@@ -194,20 +218,22 @@ class GameHex (Game):
         #transforms it to the move
         return ANEToutput
     
-    def isFinalState(self, board, player) -> int or None: # type: ignore
+    def isFinalState(self, board=None) -> int or None: # type: ignore
+        if board!=None:
+            self.setBoardState(board)
         elements = self.boardState[1:]
         grid = [elements[i*self.boardsize:i*self.boardsize+self.boardsize] for i in range(self.boardsize)]
         for node in elements:
             if "Top" in node.pos:
                 if node.value == 2:
-                    truth=self.checkNeighbors_2(node, node.neigbors, "Bot")
-                    print(truth)
+                    truth=self.checkNeighbors_2(node, node.neigbors, "Bot", set(), set())
+                    #print(truth)
                     if truth:
                         return -1 #?
             if "Left" in node.pos:
                 if node.value == 1:
-                    truth=self.checkNeighbors_2(node, node.neigbors, "Right")
-                    print(truth)
+                    truth=self.checkNeighbors_2(node, node.neigbors, "Right", set(), set())
+                    #print(truth)
                     if truth:
                         return 1 #?
         return None
@@ -217,32 +243,52 @@ class GameHex (Game):
         #check if its final state
         pass
 
-    def checkNeighbors_2(self, node: Cell, neighbors: list, pos:str):
+    def checkNeighbors_2(self, node: Cell, neighbors: list, pos:str, visited: set, path: set):
         truth=False
-        print(f"before check: {node.pos}")
+        #print(f"before check: {node.pos}")
         if pos in node.pos:
             return True
-        print("Node:")
+        visited.add(node)
+        path.add(node)
+        #print("Node:")
+        #for neigh in node.neigbors:
+            #print(f"value_ {neigh.value}, pos:{neigh.pos}")
         for neigh in node.neigbors:
-            print(f"value_ {neigh.value}, pos:{neigh.pos}")
-        for neigh in node.neigbors:
-            if neigh.value == node.value:
+            if neigh not in visited and neigh.value == node.value:
+            #if neigh.value == node.value:
                 #print(neigh.value)
-                truth = self.checkNeighbors_2(neigh, neigh.neigbors.remove(node), pos)
+                #node.neigbors.remove(neigh) #not solution
+                #neigh.neigbors.remove(node)
+                if self.checkNeighbors_2(neigh, neigh.neigbors, pos, visited, path):
+                    return True
                 #needs to check if it has been checked
-        return truth
+            elif neigh in path and neigh.value == node.value:
+                #print("Cycle detected:", neigh)
+                pass
+        path.remove(node)
+        return False
         pass
 
 
 if __name__ == "__main__":
     game = GameHex(boardSize=3)
     game.printGameState()
-    game.setBoardState(player=1, board=[0 , 0, 0,
-0, 1, 0,
-0, 0, 0
+    game.setBoardState(board=[1,2 , 1, 2,
+1, 1, 1,
+2, 2, 1
 ])
     game.printGameState()
-    value = game.isFinalState(board=game.boardState[1:], player=game.boardState[0])
+    game.getMoves()
+    """ game.setBoardStateNumber(board=[1,1 , 1, 1,
+2, 2, 0,
+0, 0, 0
+])
+    game.getMoves()"""
+    """print(game.boardState)
+    a = copy.deepcopy(game.boardState)
+    print(a)"""
+    #value = game.isFinalState(board=game.boardState[1:], player=game.boardState[0])
+    value = game.isFinalState()
     print(value)
 
 

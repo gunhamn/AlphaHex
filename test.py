@@ -17,10 +17,10 @@ if __name__ == "__main__":
 
             second_element = ast.literal_eval(second_element_str)
             # Check if the first element is [5, 1] and if the second value of the second element is higher than the first
-            if first_element == [5, 1] :
+            if first_element == [1, 5] :
                 num+=1
             
-                if second_element[1] > second_element[0]:
+                if second_element[1] >= second_element[0]:
                 # Increment the counter
                     count += 1
     print(f" correct: {count} out of {num}")

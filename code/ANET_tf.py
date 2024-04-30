@@ -23,12 +23,15 @@ class ANET_tf(tf.keras.Model):
             tf.keras.layers.Dense(10, activation='relu'),
             tf.keras.layers.Dense(numOutput, activation='softmax')
         ])
+    def load(self, filepath):
+        self.weights = self.load_weights(filepath=filepath)
         
     def forward(self, x, moves = None):
         x = np.array(x, dtype=np.float32)
         if x.ndim == 1:
             x = np.expand_dims(x, 0)
         logits = self.predict(x)
+        print(f"predictions: {logits}")
 
         if moves!=None:
             set1 = set(moves)
@@ -40,13 +43,16 @@ class ANET_tf(tf.keras.Model):
                     # If not, set the value to 0
                     logits[i] = 0
         logits = logits / np.sum(logits, axis=0, keepdims=True)
-        #print(f"logits: {logits}")
+        print(f"logits: {logits}")
         return logits
     
     def call(self, inputs):
         return self.model(inputs)
 
     def simpleForward(self, x):
+        x = np.array(x, dtype=np.float32)
+        if x.ndim == 1:
+            x = np.expand_dims(x, 0)
         return self.predict(x)
 
     def train(self, data, batch_size=10, num_epochs=50, learning_rate=0.001):
@@ -80,10 +86,10 @@ class ANET_tf(tf.keras.Model):
 
 if __name__ == "__main__":
     net = ANET_tf()
-    data = [[[2, 1], [0, 1]]]*2000
+    data = [[[1, 2], [0, 1]]]*2000
     # print(data)
     net.train(data)
-    print(net.simpleForward(np.array([[2, 1]])))
+    print(net.simpleForward(np.array([[1, 2]])))
     net.plot()
     
     model = tf.keras.Sequential([
@@ -97,5 +103,5 @@ if __name__ == "__main__":
     y = data[:, 1, :]
     model.compile(optimizer='adam', loss='kl_divergence', metrics=['accuracy'])
     model.fit(x, y, epochs=5)
-    print(model.predict(np.array([[2, 1]])))
+    print(model.predict(np.array([[1, 2]])))
 

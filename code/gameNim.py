@@ -10,12 +10,12 @@ class GameNim(Game):
     def reset(self):
         self.boardState = self.startingState
     
-    def update(self, move, verbose=False):
+    def update(self, move, verbose=True):
         moves = self.getMoves()
-        print(moves)
+        #print(moves)
         self.boardState[1] -= moves[move]
         if verbose:
-            print(f"Player {self.boardState[0]} takes {move} pieces")
+            print(f"Player {self.boardState[0]} takes {moves[move]} pieces")
         # Next player's turn
         if self.boardState[0] == 1:
             self.playerTurn = 2
@@ -27,9 +27,9 @@ class GameNim(Game):
     def getMoves(self):
         moves = []
         for i in range(self.maxMoves):
-            if i <= self.boardState[1]:
+            if i+1 <= self.boardState[1]:
                 moves.append(i+1)
-        print(f"Moves: {moves}")
+        #print(f"Moves: {moves}")
         return moves
     
     def setBoardState(self, boardState):
@@ -44,11 +44,11 @@ class GameNim(Game):
     """
     This returns the state where the action has been performed, but makes sure the game is still in the state before the action
     """
-    def actionOnState(self, action, board, player): #-> state
-        self.setBoardState(board, player)
+    def actionOnState(self, action, board): #-> state
+        self.setBoardState(board)
         self.update(action)
         boardState = self.boardState
-        self.setBoardState(board, player)
+        self.setBoardState(board)
         return boardState
     
     # Replace with the isFinalState() 

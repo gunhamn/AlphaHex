@@ -6,6 +6,7 @@ from MCT import mct
 import numpy as np
 from agent_human import AgentHuman
 import torch
+import keras
 import os
 class rl_system:
     def __init__(self, game: GameNim) -> None:
@@ -21,22 +22,21 @@ class rl_system:
         for game in range(number_games):
             print(f'its in new game {game}')
             #RBUF = []
-            self.game.reset(gameVariables=[2,2])
-            self.state=[0,0]
-            self.state[0], self.state[1] = self.game.getBoardState()
+            self.game.reset()
+            self.state= self.game.getBoardState()
             self.tree = mct(state=self.state, game = self.game, network=self.net)
-            while self.game.isFinalState(self.state[0], self.state[1]) == None: #Trenge ikke ta inn parametre
+            while self.game.isFinalState(self.state) == None: #Trenge ikke ta inn parametre
                 for sim in range(number_sim):
-                    self.tree.sim(eps=eps/(game+1))
+                    self.tree.sim()
                 D = self.tree.distribution()
-                RBUF.append([[self.tree.root.boardState[0], self.tree.root.player], D])
+                RBUF.append([self.tree.root.boardState, D])
                 action = np.argmax(D)
-                self.state = self.game.actionOnState(action, self.state[0], self.state[1])
+                self.state = self.game.actionOnState(action, self.state)
                 self.tree.root = self.tree.root.children[action] #not here
             self.net.train(RBUF)
-            if game % saveI == 0:
+            if (game+1) % saveI == 0:
                 #save ANET for tournament play
-                self.net.save(f"code/networks/network_{game}.keras")
+                self.net.save(f"code/networks/network_{game+1}.keras")
                 #torch.save(self.net, f"code/networks/network_{game}")
                 pass
         with open('output.txt', 'w') as file:
@@ -48,17 +48,16 @@ class rl_system:
 
 def playGame(game: GameNim, network: ANET_tf, verbose=True):
         agent = AgentHuman(2)
-        while game.PlayerHasWon() == 0:
+        while game.isFinalState() == None:
             if verbose:
                 game.printGameState()
             moves = game.getMoves()
-            state=[0,0]
-            state[0], state[1] = game.getBoardState()
+            state = game.getBoardState()
             if game.playerTurn == 1:
-                netState= [state[0][0], 1]
+                #netState= [state[0][0], 1]
                 #print(f"state: {network.forward(netState, moves=moves)}")
-                action = np.argmax(network.forward(netState))
-                game.update(moves[action], verbose=verbose)
+                action = np.argmax(network.forward(state))
+                game.update(action, verbose=verbose)
             else:
                 move = agent.makeMove(game, moves)
                 game.update(move, verbose=verbose)
@@ -76,14 +75,12 @@ def playGamesAI(numberGames: int, player1: ANET_tf, player2: ANET_tf, verbose=Tr
                         game.printGameState()
                     state = game.getBoardState()
                     if state[0] == 1:
-                        netState= [state[1], state[0]]
                         #print(f"state: {network.forward(netState, moves=moves)}")
-                        action = np.argmax(player1.forward(netState))
+                        action = np.argmax(player1.forward(state))
                         game.update(action, verbose=verbose)
                     else:
-                        netState= [state[1], state[0]]
                         #print(f"state: {network.forward(netState, moves=moves)}")
-                        action = np.argmax(player2.forward(netState))
+                        action = np.argmax(player2.forward(state))
                         game.update(action, verbose=verbose)
                 if verbose:
                     print(f"Player {game.isFinalState()} won!")
@@ -97,14 +94,12 @@ def playGamesAI(numberGames: int, player1: ANET_tf, player2: ANET_tf, verbose=Tr
                         game.printGameState()
                     state = game.getBoardState()
                     if state[0] == 1:
-                        netState= [state[1], state[0]]
                         #print(f"state: {network.forward(netState, moves=moves)}")
-                        action = np.argmax(player2.forward(netState))
+                        action = np.argmax(player2.forward(state))
                         game.update(action, verbose=verbose)
                     else:
-                        netState= [state[1], state[0]]
                         #print(f"state: {network.forward(netState, moves=moves)}")
-                        action = np.argmax(player1.forward(netState))
+                        action = np.argmax(player1.forward(state))
                         game.update(action, verbose=verbose)
                 if verbose:
                     print(f"Player {game.PlayerHasWon()} won!")
@@ -123,27 +118,34 @@ def main():
     """networks_dir = os.path.join(os.path.dirname(__file__), 'networks')
     print(networks_dir)"""
     
-    game = GameNim(gameVariables=[5,2])
+    """game = GameNim(gameVariables=5)
     system = rl_system(game)
-    net = system.train(saveI=5, number_games=11, number_sim=3, eps=1)
-    #net.plot()
+    net = system.train(saveI=5, number_games=100, number_sim=1000, eps=1)
+    net.plot()"""
     #testgame = GameNim(gameVariables=[5,2])
     #winner = playGame(testgame, net)
     
-    playerN = ANET()
-    print(playerN.simpleForward([2, 1]))
-    
-    player0 = ANET()
+    playerN = ANET_tf()
+    """print(playerN)
+    print(playerN.simpleForward([5, 1]))
+    playerN.load("code/networks/network_100.keras")
+    print(playerN.simpleForward([5, 1]))"""
+    playerN.model = keras.models.load_model('code/networks/network_50.keras')
+    print(playerN.simpleForward([1, 5]))
+    player1 = ANET_tf()
+    player1.model = keras.models.load_model('code/networks/network_100.keras')
+    print(player1.simpleForward([1, 5]))
+    """player0 = ANET()
     player0 = torch.load('code/networks/network_0')
-    print(f'code/networks/network_0 {player0.simpleForward([2, 1])}')
+    print(f'code/networks/network_0 {player0.simpleForward([1, 2])}')
 
     player5 = ANET()
     player5 = torch.load('code/networks/network_5')
-    print(f'code/networks/network_5 {player5.simpleForward([2, 1])}')
+    print(f'code/networks/network_5 {player5.simpleForward([1, 2])}')
 
     player200 = ANET()
     player200 = torch.load('code/networks/network_200')
-    print(f'code/networks/network_200 {player200.simpleForward([2, 1])}')
+    print(f'code/networks/network_200 {player200.simpleForward([1, 2])}')"""
     # winner = playGamesAI(1000, player1=player1, player2=player2, verbose=True)
     # print(winner)
     
