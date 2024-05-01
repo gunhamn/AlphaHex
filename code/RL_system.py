@@ -18,7 +18,7 @@ class rl_system:
 
     def train(self, saveI, number_games, number_sim, filename:str):
         RBUF = []
-        self.net= self.netMaker(numInput=(self.game.maxMoves, 3), numOutput=self.game.maxMoves)
+        self.net= self.netMaker()
         #self.net.save(f"code/networks/network_{0}"+filename+".keras")
         for game in tqdm(range(number_games)):
             print(f'its in new game {game}')
