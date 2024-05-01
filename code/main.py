@@ -17,15 +17,15 @@ Using networks shortly trained in tournament
 """
 def shortTopp(game):
     numOutput = CONFIG.get('boardSize')*CONFIG.get('boardSize')
-    numInput=numOutput+1
-    player1 = ANET_tf(numInput=numInput, numOutput=numOutput)
-    player1.model = keras.models.load_model('code/networks/network_5.keras')
-    player2 = ANET_tf(numInput=numInput, numOutput=numOutput)
-    player2.model = keras.models.load_model('code/networks/network_20.keras')
-    player3 = ANET_tf(numInput=numInput, numOutput=numOutput)
-    player3.model = keras.models.load_model('code/networks/network_50.keras')
-    player4 = ANET_tf(numInput=numInput, numOutput=numOutput)
-    player4.model = keras.models.load_model('code/networks/network_100.keras')
+    numInput=numOutput
+    player1 = ANET_tf(numInput=(numInput,3), numOutput=numOutput)
+    player1.model = keras.models.load_model('code/networks/network_0OHT.keras')
+    player2 = ANET_tf(numInput=(numInput,3), numOutput=numOutput)
+    player2.model = keras.models.load_model('code/networks/network_50OHT.keras')
+    player3 = ANET_tf(numInput=(numInput,3), numOutput=numOutput)
+    player3.model = keras.models.load_model('code/networks/network_100OHT.keras')
+    player4 = ANET_tf(numInput=(numInput,3), numOutput=numOutput)
+    player4.model = keras.models.load_model('code/networks/network_130OHT.keras')
     networks=[player1, player2, player3, player4]
     topp = TOPP(networks=networks, game=game)
     topp.tournament(numberOfRounds=CONFIG.get('TOPPGames'))
@@ -46,5 +46,6 @@ if __name__ == "__main__":
     tree = mct
     actualGame=game(boardSize=CONFIG.get('boardSize'))
     system = rl_system(game=actualGame, gameMaker=game, netMaker=net, treeMaker=tree)
-    trainNetworks(filename="OHT", system=system)
+    trainNetworks(filename="TOPP", system=system)
+    #shortTopp(actualGame)
     pass

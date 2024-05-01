@@ -47,16 +47,16 @@ class TOPP:
 if __name__ == "__main__":
     game = GameHex(boardSize=4)
     numOutput = game.boardsize*game.boardsize
-    numInput=numOutput+1
+    numInput=numOutput
 
-    player1 = ANET_tf(numInput=numInput, numOutput=numOutput)
-    player1.model = keras.models.load_model('code/networks/network_5.keras')
-    player2 = ANET_tf(numInput=numInput, numOutput=numOutput)
-    player2.model = keras.models.load_model('code/networks/network_20.keras')
-    player3 = ANET_tf(numInput=numInput, numOutput=numOutput)
-    player3.model = keras.models.load_model('code/networks/network_50.keras')
-    player4 = ANET_tf(numInput=numInput, numOutput=numOutput)
-    player4.model = keras.models.load_model('code/networks/network_100.keras')
+    player1 = ANET_tf(numInput=(numInput,3), numOutput=numOutput)
+    player1.model = keras.models.load_model('code/networks/network_0OHT.keras')
+    player2 = ANET_tf(numInput=(numInput,3), numOutput=numOutput)
+    player2.model = keras.models.load_model('code/networks/network_50OHT.keras')
+    player3 = ANET_tf(numInput=(numInput,3), numOutput=numOutput)
+    player3.model = keras.models.load_model('code/networks/network_100OHT.keras')
+    player4 = ANET_tf(numInput=(numInput,3), numOutput=numOutput)
+    player4.model = keras.models.load_model('code/networks/network_130OHT.keras')
 
     networks=[player1, player2, player3, player4]
     topp = TOPP(networks=networks, game=game)
