@@ -4,6 +4,7 @@ import keras
 from Code.alphahex import GameHex
 from ActorClient import ActorClient
 import numpy as np
+import os
 class OHT(ActorClient):
     """
     Initializes the class to prepare for OHT
@@ -11,9 +12,13 @@ class OHT(ActorClient):
 
     def __init__(self, auth, qualify):
         super().__init__(auth=auth, qualify=qualify)
+        model_path = os.path.join(os.getcwd(), 'bigModel.keras')
         self.game = GameHex(boardSize=7)
-        self.actor=ANET_tf(numInput=50, numOutput=49)
-        self.actor.model = keras.models.load_model('code/networks/network_0OHT.keras')
+        self.actor=ANET_tf(numInput=(49, 3), numOutput=49)
+        self.actor.build(input_shape=(None, *self.actor.numInput))
+        #self.actor.model.load_weights(model_path)
+        self.actor.model = keras.models.load_model('testingModel.keras')
+        #self.actor.load(model_path)
 
     def handle_game_start(self, start_player):
        self.game.reset()
