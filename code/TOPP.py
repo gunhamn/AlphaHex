@@ -5,7 +5,7 @@ import keras
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 class TOPP:
-    def __init__(self, networks, game:GameHex) -> None:
+    def __init__(self, networks, game) -> None:
         self.score=[0]*len(networks)
         self.game = game
         self.networks = networks
@@ -52,27 +52,22 @@ if __name__ == "__main__":
     player1 = ANET_tf(numInput=numInput, numOutput=numOutput)
     player1.model = keras.models.load_model('code/networks/network_5.keras')
     player2 = ANET_tf(numInput=numInput, numOutput=numOutput)
-    player2.model = keras.models.load_model('code/networks/network_10.keras')
+    player2.model = keras.models.load_model('code/networks/network_20.keras')
     player3 = ANET_tf(numInput=numInput, numOutput=numOutput)
-    player3.model = keras.models.load_model('code/networks/network_15.keras')
+    player3.model = keras.models.load_model('code/networks/network_50.keras')
     player4 = ANET_tf(numInput=numInput, numOutput=numOutput)
-    player4.model = keras.models.load_model('code/networks/network_25.keras')
+    player4.model = keras.models.load_model('code/networks/network_100.keras')
 
     networks=[player1, player2, player3, player4]
     topp = TOPP(networks=networks, game=game)
     print("RUNBEGINS")
-    topp.tournament(25)
+    topp.tournament(numberOfRounds=25)
     print(topp.score)
-    plt.plot([1,2,3,4], topp.score)
-    plt.xlabel('players')
-    plt.ylabel('wins')
-    plt.title('Histogram')
-    plt.show()
 
     plt.bar([1,2,3,4], topp.score, color='blue')
     plt.xlabel('players')
     plt.ylabel('wins')
-    plt.title('Histogram')
+    plt.title('_/150')
     plt.grid(True)  # Add grid lines for better readability
     plt.show()
     #plot histogram with score

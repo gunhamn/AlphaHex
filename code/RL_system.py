@@ -1,37 +1,32 @@
-from ANET import ANET
-from gameNim import GameNim
-from alphahex import GameHex
-from ANET_tf import ANET_tf
+
 #from game_nim import GameNim
-from MCT_random import mct
 import numpy as np
-from agent_human import AgentHuman
-import torch
-import keras
-import os
-from tensorflow import keras
 from keras.models import load_model
 from tqdm import tqdm
 
 class rl_system:
-    def __init__(self, game: GameHex) -> None:
+    def __init__(self, game, gameMaker, netMaker, treeMaker) -> None:
+        self.treeMaker = treeMaker
+        self.gameMaker = gameMaker
+        self.netMaker = netMaker
         self.net = None
         self.tree = None
         self.game = game
         self.state = None
         pass
 
-    def train(self, saveI, number_games, number_sim, eps):
+    def train(self, saveI, number_games, number_sim, filename:str):
         RBUF = []
-        self.net= ANET_tf(numInput=self.game.maxMoves+1, numOutput=self.game.maxMoves)
+        self.net= self.netMaker(numInput=self.game.maxMoves+1, numOutput=self.game.maxMoves)
+        #self.net.save(f"code/networks/network_{0}"+filename+".keras")
         for game in tqdm(range(number_games)):
             print(f'its in new game {game}')
             #RBUF = []
             self.game.reset()
             self.state= self.game.getBoardState()
-            self.tree = mct(state=self.state, game = GameHex(self.game.boardsize, playerTurn=self.game.boardState[0]), network=self.net)
+            self.tree = self.treeMaker(state=self.state, game = self.gameMaker(self.game.boardsize, playerTurn=self.game.boardState[0]), network=self.net)
             while self.game.isFinalState(self.state) == None: #Trenge ikke ta inn parametre
-                for sim in range(number_sim):
+                for sim in tqdm(range(number_sim)):
                     self.tree.sim()
                 D = self.tree.distribution()
                 RBUF.append([self.tree.root.boardState, D])
@@ -43,10 +38,12 @@ class rl_system:
                         chosenChild = child
                 self.tree.root = chosenChild
             #print(f"RBUF: {RBUF.shape}")
+            if game==0:
+                self.net.save(f"code/networks/network_{0}"+filename+".keras")
             self.net.train(RBUF)
             if (game+1) % saveI == 0:
                 #save ANET for tournament play
-                self.net.save(f"code/networks/network_{game+1}.keras")
+                self.net.save(f"code/networks/network_{game+1}"+filename+".keras")
                 #torch.save(self.net, f"code/networks/network_{game}")
                 pass
         with open('output.txt', 'w') as file:
@@ -56,7 +53,7 @@ class rl_system:
        # print(f"data: {RBUF}")
         return self.net
 
-def playGame(game: GameNim, network: ANET_tf, verbose=True):
+"""def playGame(game: GameNim, network: ANET_tf, verbose=True):
         agent = AgentHuman(2)
         while game.isFinalState() == None:
             if verbose:
@@ -117,7 +114,7 @@ def playGamesAI(numberGames: int, player1: ANET_tf, player2: ANET_tf, verbose=Tr
                     wincount[1]+=1
                 else:
                     wincount[0]+=1
-        return wincount
+        return wincount"""
 
 def testNetworks():
     #test all networks against eachother, tournament code 
@@ -127,11 +124,11 @@ def main():
     print("RUN BEGINS")
     """networks_dir = os.path.join(os.path.dirname(__file__), 'networks')
     print(networks_dir)"""
-    
+    """ gameMaker=GameHex
     game = GameHex(boardSize=4)
-    system = rl_system(game)
-    net = system.train(saveI=5, number_games=100, number_sim=30, eps=1)
-    net.plot()
+    system = rl_system(game, gameMaker=gameMaker)
+    net = system.train(saveI=5, number_games=100, number_sim=10, eps=1)
+    net.plot()"""
     #testgame = GameNim(gameVariables=[5,2])
     #winner = playGame(testgame, net)
     """player5 = ANET_tf()

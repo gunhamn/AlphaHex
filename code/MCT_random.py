@@ -1,14 +1,12 @@
 #Emily sin incorporation av Monte Carlo tre
 from Node import node
 import numpy as np
-from alphahex import GameHex
-from ANET_tf import ANET_tf
 import torch
 import torch.nn.functional as F
 import tensorflow as tf
 import random
 class mct:
-    def __init__(self, state, game: GameHex, network: ANET_tf) -> None:
+    def __init__(self, state, game, network) -> None:
         self.game = game
         self.game.setBoardState(state)
         self.root = node(state, maxMoves=len(game.getMoves()))
