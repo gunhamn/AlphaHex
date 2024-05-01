@@ -6,7 +6,7 @@ CONFIG = {}
 CONFIG['boardSize'] = 4
 
 #MCTS parameters
-CONFIG['episodes'] = 10
+CONFIG['episodes'] = 5
 CONFIG['sims'] = 5
 
 #Neural network

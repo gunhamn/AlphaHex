@@ -65,21 +65,20 @@ class ANET_tf(tf.keras.Model):
         return self.predict(x)
 
     def train(self, data, batch_size=10, num_epochs=50, learning_rate=0.001):
-        print(f"Data before training: {data}")
-        print(f"Data before training[0]: {data[0]}")
-        print(f"Data before training[1]: {data[1]}")
-        print(f"Data before training[0][0]: {data[0][0]}")
-        print(f"Data before training[1][0]: {data[1][0]}")
-        print(f"Data before training[0][0][0]: {data[0][0][0]}")
-        print(f"len(Data before training): {len(data)}")
-        print(f"len(Data before training[0]): {len(data[0])}")
-        print(f"len(Data before training[1]): {len(data[1])}")
-        print(f"len(Data before training[0][0]): {len(data[0][0])}")
-        print(f"len(Data before training[1][0]): {len(data[1][0])}")
         self.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
                      loss='kl_divergence',
                      metrics=['accuracy'])
-        print(f"data: {data}")
+        print(f"len(data): {len(data)}")
+        print(f"len(data[0]): {len(data[0])}")
+        print(f"len(data[1]): {len(data[1])}")
+        print(f"len(data[0][0]): {len(data[0][0])}")
+        print(f"len(data[1][0]): {len(data[1][0])}")
+        print(f"len(data[0][1]): {len(data[0][1])}")
+        print(f"len(data[1][1]): {len(data[1][1])}")
+        print(f"data[1][0]: {data[1][0]}")
+        print(f"data[0][:5]: {data[0][:5]}")
+        print(f"data[1][:5]: {data[1][:5]}")
+
         x, y = self.process_data(data)
         #data = np.array(data)
         #x = data[:, 0, :]
@@ -117,20 +116,18 @@ class ANET_tf(tf.keras.Model):
         # Outputs x = [player1pieces, player2pieces, playerTurn], y = [distribution]
         # on the format x.shape = (n*n*3), y.shape = (n*n)
         # where p1 -> playerTurn = 0, p2 -> playerTurn = 1
-        print(f"len(data[0]): {len(data[0])}")
-        print(f"len(data[0][0]): {len(data[0][0])}")
-        print(f"len(data[0][1]): {len(data[0][1])}")
+        
+        data = self.correct_dims(data)
         x = [[], [], []]
         y = data[1].copy()
         for i in range(len(data[0])):
             if data[0][i][0] == 1:
-                x[2].append([0]*len(data[1][0])) # 0 for player 1
+                x[2].append([0]*(len(data[1][0]))) # 0 for player 1
             else:
-                x[2].append([1]*len(data[1][0])) # 1 for player 2
-        for i in range(len(data[0])):
-            
-            x[0].append([1 if data[0][i][j] == 1 else 0 for j in range(len(data[0][0]))])
-            x[1].append([1 if data[0][i][j] == 2 else 0 for j in range(len(data[0][0]))])
+                x[2].append([1]*(len(data[1][0]))) # 1 for player 2
+        for row in data[0]:
+            x[0].append([1 if value == 1 else 0 for value in row])
+            x[1].append([1 if value == 2 else 0 for value in row])
         for i in range(len(data[0])): # Remove the first element, indicating player turn
             x[0][i].pop(0)
             x[1][i].pop(0)
@@ -139,6 +136,32 @@ class ANET_tf(tf.keras.Model):
         y = np.array(y)
         return x, y
     
+    def correct_dims(self, data):
+        # Annoyingly long function to correct the dimensions of the data
+        # Verify the current format by checking if the first element's length is 2
+        if len(data[0]) == 2: # Initialize the corrected data format with the correct outer array sizes
+            corrected_data = [[] for _ in range(2)]
+            # Iterate over the original data to reorganize it
+            for i in range(len(data)):
+                for j in range(len(data[i])):
+                    corrected_data[j].append(data[i][j])
+            # Combining inner lists to form the correct innermost arrays
+            new_corrected_data = []
+            for group in corrected_data:
+                new_group = []
+                for sub_group in group:
+                    new_sub_group = []
+                    for element in sub_group:
+                        if isinstance(element, list):
+                            new_sub_group.extend(element)
+                        else:
+                            new_sub_group.append(element)
+                    new_group.append(new_sub_group)
+                new_corrected_data.append(new_group)
+            return new_corrected_data
+        else:
+            return data
+        
     def process_state(self, state):
         # Takes in data on the format [[state], [distribution]]
         # meaning shape: [[1 + n*n], [n*n]
@@ -164,7 +187,7 @@ if __name__ == "__main__":
     model = ANET_tf()
     # Model summary to check the architecture
     model.build(input_shape=(None, *model.numInput))
-    data = ANET_tf().load_data(path='data.txt')
+    data = ANET_tf().load_data(path='data_1game_1500sim.txt')
     model.train(data=data, batch_size=100, num_epochs=2)
     # model.plot()
     state = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
