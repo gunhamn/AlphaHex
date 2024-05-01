@@ -1,18 +1,9 @@
 
 import numpy as np
-import torch.nn as nn
-import torch.optim as optim
-import torch
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from keras.models import Model
 from keras.layers import Input, Conv1D, Add, ReLU, Dense, Flatten
-
-""" Couldn't get imports to work.....
-import tensorflow as tf
-import torch
-import torch.nn as nn
-"""
 
 class ANET_tf(tf.keras.Model):
     def __init__(self, numInput=(49, 3),
@@ -43,16 +34,13 @@ class ANET_tf(tf.keras.Model):
         logits = self.predict(x, verbose=False)
         if moves!=None:
             set1 = set(moves)
-
             # Iterate over the indices of list2
             for i in range(len(logits[0])):
                 # Check if the index+1 is in list1
                 if i not in set1:
                     # If not, set the value to 0
                     logits[0][i] = 0
-            #print(f"logits before norm: {logits}")
             logits[0] = logits[0] / np.sum(logits[0], axis=0, keepdims=True)
-        #print(f"logits: {logits}")
         return logits
     
     def call(self, inputs):
@@ -68,27 +56,7 @@ class ANET_tf(tf.keras.Model):
         self.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
                      loss='kl_divergence',
                      metrics=['accuracy'])
-        print(f"len(data): {len(data)}")
-        print(f"len(data[0]): {len(data[0])}")
-        print(f"len(data[1]): {len(data[1])}")
-        print(f"len(data[0][0]): {len(data[0][0])}")
-        print(f"len(data[1][0]): {len(data[1][0])}")
-        print(f"len(data[0][1]): {len(data[0][1])}")
-        print(f"len(data[1][1]): {len(data[1][1])}")
-        print(f"data[1][0]: {data[1][0]}")
-        print(f"data[0][:5]: {data[0][:5]}")
-        print(f"data[1][:5]: {data[1][:5]}")
-
         x, y = self.process_data(data)
-        #data = np.array(data)
-        #x = data[:, 0, :]
-        #x = np.reshape(x, (-1, 2))
-        #y = data[:, 1, :]
-        #y = np.reshape(y, (-1, 2))
-        """print(f"Shape of x: {x.shape}")  # Debugging line
-        print(f'x: {x}')
-        print(f"Shape of y: {y.shape}")  # Debugging line
-        print(f'y: {y}')"""
         history = self.fit(x, y, epochs=num_epochs, batch_size=batch_size, verbose=1)
         self.lossarray.append(history.history['loss'])
 
