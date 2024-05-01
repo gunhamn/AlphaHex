@@ -27,5 +27,5 @@ if __name__ == "__main__":
     tree = mct
     actualGame=game(boardSize=CONFIG.get('boardSize'))
     system = rl_system(game=actualGame, gameMaker=game, netMaker=net, treeMaker=tree)
-    trainNetworks(filename="Train", system=system)
+    trainNetworks(filename="OHT", system=system)
     pass
