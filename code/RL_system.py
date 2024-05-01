@@ -11,6 +11,7 @@ import keras
 import os
 from tensorflow import keras
 from keras.models import load_model
+from tqdm import tqdm
 
 class rl_system:
     def __init__(self, game: GameHex) -> None:
@@ -23,7 +24,7 @@ class rl_system:
     def train(self, saveI, number_games, number_sim, eps):
         RBUF = []
         self.net= ANET_tf(numInput=self.game.maxMoves+1, numOutput=self.game.maxMoves)
-        for game in range(number_games):
+        for game in tqdm(range(number_games)):
             print(f'its in new game {game}')
             #RBUF = []
             self.game.reset()
@@ -127,18 +128,18 @@ def main():
     """networks_dir = os.path.join(os.path.dirname(__file__), 'networks')
     print(networks_dir)"""
     
-    """game = GameHex(boardSize=4)
+    game = GameHex(boardSize=4)
     system = rl_system(game)
-    net = system.train(saveI=5, number_games=10, number_sim=100, eps=1)
-    net.plot()"""
+    net = system.train(saveI=5, number_games=100, number_sim=30, eps=1)
+    net.plot()
     #testgame = GameNim(gameVariables=[5,2])
     #winner = playGame(testgame, net)
-    player5 = ANET_tf()
+    """player5 = ANET_tf()
     player5.model = keras.models.load_model('code/networks/network_5.keras')
     print(player5.forward([2, 0, 0, 0, 0, 0, 0, 1, 1, 2, 0, 0, 0, 0, 0, 0, 0]))
     player10 = ANET_tf()
     player10.model = keras.models.load_model('code/networks/network_10.keras')
-    print(player10.forward([2, 0, 0, 0, 0, 0, 0, 1, 1, 2, 0, 0, 0, 0, 0, 0, 0]))
+    print(player10.forward([2, 0, 0, 0, 0, 0, 0, 1, 1, 2, 0, 0, 0, 0, 0, 0, 0]))"""
     """playerN = ANET_tf()
     print(playerN)
     print(playerN.simpleForward([5, 1]))

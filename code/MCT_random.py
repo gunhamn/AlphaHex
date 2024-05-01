@@ -65,7 +65,7 @@ class mct:
         #print('IN ROLLOUT')
         while self.game.isFinalState(state.boardState)==None:
             #print(f"possible moves: {self.game.getMoves()}")
-            if self.net ==None:
+            if self.net == None:
                 action = np.random.choice(self.game.getMoves())
             else:
                 action = np.argmax(self.net.forward(state.boardState, self.game.getMoves() ))
