@@ -4,24 +4,59 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from keras.models import Model
 from keras.layers import Input, Conv1D, Add, ReLU, Dense, Flatten
+from Code.CONFIG import CONFIG
 
 class ANET_tf(tf.keras.Model):
-    def __init__(self, numInput=(49, 3),
-                 numOutput=49,
-                 optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
-                 layers=None):
+    def __init__(self, numInput=CONFIG.get('numInput'),
+                 numOutput=CONFIG.get('numOutput'),
+                 optimizer=CONFIG.get('optimizer'),
+                 learning_rate=CONFIG.get('learningRate'),
+                 layers=CONFIG.get('layers')):
         super(ANET_tf, self).__init__()
         self.numInput = numInput
         self.lossarray = []
-        self.optimizer = optimizer
-        layers = layers if layers is not None else [
-            Conv1D(64, 3, padding='same', input_shape=self.numInput),
-            Conv1D(64, 3, padding='same'),
-            ReLU(),
-            Flatten(),
-            tf.keras.layers.Dense(numOutput, activation='softmax')
-        ]
-        self.model = tf.keras.Sequential(layers)
+        if isinstance(optimizer, str):
+            if optimizer.lower() == 'adam':
+                self.optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+            elif optimizer.lower() == 'rmsprop':
+                self.optimizers.append(tf.keras.optimizers.RMSprop(learning_rate=learning_rate))
+            elif optimizer.lower() == 'adagrad':
+                self.optimizers.append(tf.keras.optimizers.Adagrad(learning_rate=learning_rate))
+            elif optimizer.lower() == 'adamax':
+                self.optimizers.append(tf.keras.optimizers.Adamax(learning_rate=learning_rate))
+            elif optimizer.lower() == 'nadam':
+                self.optimizers.append(tf.keras.optimizers.Nadam(learning_rate=learning_rate))
+            else: #default optimizer
+                self.optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+        if layers is not None:
+            # Initialize layers from config
+            layer_objs = []
+            for layer in layers:
+                if layer['type'] == 'Conv1D':
+                    layer_objs.append(tf.keras.layers.Conv1D(filters=layer['filters'], kernel_size=layer['kernel_size'],
+                                                            padding=layer['padding'], input_shape=layer.get('input_shape', None)))
+                elif layer['type'] == 'ReLU':
+                    layer_objs.append(tf.keras.layers.ReLU())
+                elif layer['type'] == 'Flatten':
+                    layer_objs.append(tf.keras.layers.Flatten())
+                elif layer['type'] == 'tanH':
+                    layer_objs.append(tf.keras.layers.Activation('tanh'))
+                elif layer['type'] == 'softmax':
+                    layer_objs.append(tf.keras.layers.Activation('softmax'))
+                elif layer['type'] == 'sigmoid':
+                    layer_objs.append(tf.keras.layers.Activation('sigmoid'))
+                elif layer['type'] == 'Dense':
+                    layer_objs.append(tf.keras.layers.Dense(units=layer['units'], activation=layer['activation']))
+            self.model = tf.keras.Sequential(layer_objs)
+        else:
+            # Default architecture
+            self.model = tf.keras.Sequential([
+                tf.keras.layers.Conv1D(64, 3, padding='same', input_shape=self.numInput),
+                tf.keras.layers.Conv1D(64, 3, padding='same'),
+                tf.keras.layers.ReLU(),
+                tf.keras.layers.Flatten(),
+                tf.keras.layers.Dense(numOutput, activation='softmax')
+            ])
     
     def load(self, filepath):
         self.weights = self.load_weights(filepath=filepath)
