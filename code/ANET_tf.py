@@ -36,15 +36,11 @@ class ANET_tf(tf.keras.Model):
         self.weights = self.load_weights(filepath=filepath)
         
     def forward(self, x, moves = None):
+        x = self.process_state(x)
         x = np.array(x, dtype=np.float32)
-        # print(f'x: {x}')
         if x.ndim == 2:
             x = np.expand_dims(x, 0)
-        #print(f'x: {x}')
         logits = self.predict(x, verbose=False)
-        #print(f"predictions: {logits}, shape: {np.shape(logits)}")
-        #print(f"moves: {moves}")
-
         if moves!=None:
             set1 = set(moves)
 
@@ -69,15 +65,22 @@ class ANET_tf(tf.keras.Model):
         return self.predict(x)
 
     def train(self, data, batch_size=10, num_epochs=50, learning_rate=0.001):
-        
+        print(f"Data before training: {data}")
+        print(f"Data before training[0]: {data[0]}")
+        print(f"Data before training[1]: {data[1]}")
+        print(f"Data before training[0][0]: {data[0][0]}")
+        print(f"Data before training[1][0]: {data[1][0]}")
+        print(f"Data before training[0][0][0]: {data[0][0][0]}")
+        print(f"len(Data before training): {len(data)}")
+        print(f"len(Data before training[0]): {len(data[0])}")
+        print(f"len(Data before training[1]): {len(data[1])}")
+        print(f"len(Data before training[0][0]): {len(data[0][0])}")
+        print(f"len(Data before training[1][0]): {len(data[1][0])}")
         self.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
-                     loss='kl_divergence',  # Assuming label encoding
+                     loss='kl_divergence',
                      metrics=['accuracy'])
         print(f"data: {data}")
-        case = np.array([item[0] for item in data])
-        target = np.array([item[1] for item in data])
-        x=case
-        y=target
+        x, y = self.process_data(data)
         #data = np.array(data)
         #x = data[:, 0, :]
         #x = np.reshape(x, (-1, 2))
@@ -114,6 +117,9 @@ class ANET_tf(tf.keras.Model):
         # Outputs x = [player1pieces, player2pieces, playerTurn], y = [distribution]
         # on the format x.shape = (n*n*3), y.shape = (n*n)
         # where p1 -> playerTurn = 0, p2 -> playerTurn = 1
+        print(f"len(data[0]): {len(data[0])}")
+        print(f"len(data[0][0]): {len(data[0][0])}")
+        print(f"len(data[0][1]): {len(data[0][1])}")
         x = [[], [], []]
         y = data[1].copy()
         for i in range(len(data[0])):
@@ -122,6 +128,7 @@ class ANET_tf(tf.keras.Model):
             else:
                 x[2].append([1]*len(data[1][0])) # 1 for player 2
         for i in range(len(data[0])):
+            
             x[0].append([1 if data[0][i][j] == 1 else 0 for j in range(len(data[0][0]))])
             x[1].append([1 if data[0][i][j] == 2 else 0 for j in range(len(data[0][0]))])
         for i in range(len(data[0])): # Remove the first element, indicating player turn
@@ -131,19 +138,40 @@ class ANET_tf(tf.keras.Model):
         x = np.transpose(x, (1, 2, 0))
         y = np.array(y)
         return x, y
+    
+    def process_state(self, state):
+        # Takes in data on the format [[state], [distribution]]
+        # meaning shape: [[1 + n*n], [n*n]
+        # Outputs x = [player1pieces, player2pieces, playerTurn], y = [distribution]
+        # on the format x.shape = (n*n*3), y.shape = (n*n)
+        # where p1 -> playerTurn = 0, p2 -> playerTurn = 1
+        x = [[], [], []]
+        data = state.copy()
+        if data[0] == 1:
+            x[2].extend([0]*(len(data)-1)) # 0 for player 1
+        else:
+            x[2].extend([1]*(len(data)-1)) # 1 for player 2
+        data.pop(0)
+        for i in range(len(data)):
+            x[0].extend([1 if data[i] == 1 else 0])
+            x[1].extend([1 if data[i] == 2 else 0])
+
+        x = np.array(x)
+        x = np.transpose(x, (1, 0))
+        return x
 
 if __name__ == "__main__":
     model = ANET_tf()
     # Model summary to check the architecture
     model.build(input_shape=(None, *model.numInput))
-    data = ANET_tf().load_data(path='data_5game_1500sim.txt')
-    x, y = ANET_tf().process_data(data)
-    print(f"x.shape: {x.shape}")
-    print(f"y.shape: {y.shape}")
-    
-    model.train(data=list(zip(x, y)), num_epochs=40)
-    #model.plot()
-
+    data = ANET_tf().load_data(path='data.txt')
+    model.train(data=data, batch_size=100, num_epochs=2)
+    # model.plot()
+    state = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    prediction = model.forward(state)
+    print(f"Index of highest value in prediction: {np.argmax(prediction)}")
+    #model.save('bigModel.keras')
+    """
     data_verification = ANET_tf().load_data(path='data_1game_1500sim.txt')
     x_verification, y_verification = ANET_tf().process_data(data_verification)
     print(f"x_verification.shape: {x_verification.shape}")
@@ -162,5 +190,4 @@ if __name__ == "__main__":
         print(f"Index of highest value in prediction: {np.argmax(prediction)}")
         print(f"Index of highest value in y_verification: {np.argmax(y_verification[i])}")
         
-        
-    #model.save('firstModel.keras')
+    """

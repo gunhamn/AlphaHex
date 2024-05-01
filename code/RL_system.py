@@ -3,6 +3,7 @@
 import numpy as np
 from keras.models import load_model
 from tqdm import tqdm
+from alphahex import GameHex
 
 class rl_system:
     def __init__(self, game, gameMaker, netMaker, treeMaker) -> None:
@@ -17,7 +18,7 @@ class rl_system:
 
     def train(self, saveI, number_games, number_sim, filename:str):
         RBUF = []
-        self.net= self.netMaker(numInput=self.game.maxMoves+1, numOutput=self.game.maxMoves)
+        self.net= self.netMaker(numInput=(self.game.maxMoves, 3), numOutput=self.game.maxMoves)
         #self.net.save(f"code/networks/network_{0}"+filename+".keras")
         for game in tqdm(range(number_games)):
             print(f'its in new game {game}')
@@ -124,7 +125,8 @@ def main():
     print("RUN BEGINS")
     """networks_dir = os.path.join(os.path.dirname(__file__), 'networks')
     print(networks_dir)"""
-    """ gameMaker=GameHex
+    """
+    gameMaker=GameHex
     game = GameHex(boardSize=4)
     system = rl_system(game, gameMaker=gameMaker)
     net = system.train(saveI=5, number_games=100, number_sim=10, eps=1)
