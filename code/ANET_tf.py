@@ -5,6 +5,8 @@ import torch.optim as optim
 import torch
 import matplotlib.pyplot as plt
 import tensorflow as tf
+from keras.models import Model
+from keras.layers import Input, Conv1D, Add, ReLU, Dense, Flatten
 
 """ Couldn't get imports to work.....
 import tensorflow as tf
@@ -13,26 +15,31 @@ import torch.nn as nn
 """
 
 class ANET_tf(tf.keras.Model):
-    def __init__(self, numInput=17, numOutput=16):
+    def __init__(self, numInput=(49, 3),
+                 numOutput=49,
+                 optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+                 layers=None):
         super(ANET_tf, self).__init__()
         self.numInput = numInput
         self.lossarray = []
-        self.model = tf.keras.Sequential([
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(10, input_shape=(numInput,), activation='relu'),
-            tf.keras.layers.Dense(15, activation='relu'),
-            tf.keras.layers.Dense(10, activation='relu'),
+        self.optimizer = optimizer
+        layers = layers if layers is not None else [
+            Conv1D(64, 3, padding='same', input_shape=self.numInput),
+            Conv1D(64, 3, padding='same'),
+            ReLU(),
+            Flatten(),
             tf.keras.layers.Dense(numOutput, activation='softmax')
-        ])
+        ]
+        self.model = tf.keras.Sequential(layers)
+    
     def load(self, filepath):
         self.weights = self.load_weights(filepath=filepath)
         
     def forward(self, x, moves = None):
-        x = np.array(x).reshape(1, self.numInput)
-        """ x = np.array(x, dtype=np.float32)
-        print(f'x: {x}')
-        if x.ndim == 1:
-            x = np.expand_dims(x, 0)"""
+        x = np.array(x, dtype=np.float32)
+        # print(f'x: {x}')
+        if x.ndim == 2:
+            x = np.expand_dims(x, 0)
         #print(f'x: {x}')
         logits = self.predict(x, verbose=False)
         #print(f"predictions: {logits}, shape: {np.shape(logits)}")
@@ -84,7 +91,7 @@ class ANET_tf(tf.keras.Model):
         self.lossarray.append(history.history['loss'])
 
     def plot(self):
-        plt.plot(self.lossarray)
+        plt.plot(self.lossarray[0])
         plt.xlabel("Epoch")
         plt.ylabel("Loss")
         plt.title("Training Loss Over Epochs")
@@ -93,26 +100,67 @@ class ANET_tf(tf.keras.Model):
     def save(self, path):
         self.model.save(path)
 
-
+    def load_data(self, path='data_5game_1500sim.txt'):
+        data = [[], []]
+        with open(path, 'r') as file:
+            for line in file:
+                data[0].append(eval(line)[0])
+                data[1].append(eval(line)[1])
+        return data
+    
+    def process_data(self, data):
+        # Takes in data on the format [[state], [distribution]]
+        # meaning shape: [[1 + n*n], [n*n]
+        # Outputs x = [player1pieces, player2pieces, playerTurn], y = [distribution]
+        # on the format x.shape = (n*n*3), y.shape = (n*n)
+        # where p1 -> playerTurn = 0, p2 -> playerTurn = 1
+        x = [[], [], []]
+        y = data[1].copy()
+        for i in range(len(data[0])):
+            if data[0][i][0] == 1:
+                x[2].append([0]*len(data[1][0])) # 0 for player 1
+            else:
+                x[2].append([1]*len(data[1][0])) # 1 for player 2
+        for i in range(len(data[0])):
+            x[0].append([1 if data[0][i][j] == 1 else 0 for j in range(len(data[0][0]))])
+            x[1].append([1 if data[0][i][j] == 2 else 0 for j in range(len(data[0][0]))])
+        for i in range(len(data[0])): # Remove the first element, indicating player turn
+            x[0][i].pop(0)
+            x[1][i].pop(0)
+        x = np.array(x)
+        x = np.transpose(x, (1, 2, 0))
+        y = np.array(y)
+        return x, y
 
 if __name__ == "__main__":
-    net = ANET_tf()
-    data = [[[1, 2], [0, 1]]]*2000
-    # print(data)
-    net.train(data)
-    print(net.simpleForward(np.array([[1, 2]])))
-    net.plot()
+    model = ANET_tf()
+    # Model summary to check the architecture
+    model.build(input_shape=(None, *model.numInput))
+    data = ANET_tf().load_data(path='data_5game_1500sim.txt')
+    x, y = ANET_tf().process_data(data)
+    print(f"x.shape: {x.shape}")
+    print(f"y.shape: {y.shape}")
     
-    model = tf.keras.Sequential([
-        tf.keras.layers.Dense(10, input_shape=(2,), activation='relu'),
-        tf.keras.layers.Dense(15, activation='relu'),
-        tf.keras.layers.Dense(10, activation='relu'),
-        tf.keras.layers.Dense(2, activation='softmax')
-    ])
-    data = np.array(data)
-    x = data[:, 0, :]
-    y = data[:, 1, :]
-    model.compile(optimizer='adam', loss='kl_divergence', metrics=['accuracy'])
-    model.fit(x, y, epochs=5)
-    print(model.predict(np.array([[1, 2]])))
+    model.train(data=list(zip(x, y)), num_epochs=40)
+    #model.plot()
 
+    data_verification = ANET_tf().load_data(path='data_1game_1500sim.txt')
+    x_verification, y_verification = ANET_tf().process_data(data_verification)
+    print(f"x_verification.shape: {x_verification.shape}")
+    print(f"y_verification.shape: {y_verification.shape}")
+    print(f'x_verification[-1].shape: {x_verification[-1].shape}')
+    
+    
+    prediction = model.forward(x_verification[-1])
+    print(f"prediction: {model.forward(x_verification[-1])}")
+    # print the index of the highest value in the prediction
+    print(f"Index of highest value in prediction: {np.argmax(prediction)}")
+    print(f"y_verification[-1]: {y_verification[-1]}")
+    print(f"Index of highest value in y_verification: {np.argmax(y_verification[-1])}")
+    for i in range(len(y_verification)):
+        prediction = model.forward(x_verification[i])
+        print(f"Index of highest value in prediction: {np.argmax(prediction)}")
+        print(f"Index of highest value in y_verification: {np.argmax(y_verification[i])}")
+        
+        
+    #model.save('firstModel.keras')
