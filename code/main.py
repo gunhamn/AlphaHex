@@ -18,14 +18,22 @@ Using networks shortly trained in tournament
 def shortTopp(game):
     numOutput = CONFIG.get('boardSize')*CONFIG.get('boardSize')
     numInput=numOutput
-    player1 = ANET_tf(numInput=(numInput,3), numOutput=numOutput)
+    """player1 = ANET_tf(numInput=(numInput,3), numOutput=numOutput)
     player1.model = keras.models.load_model('code/networks/network_0OHT.keras')
     player2 = ANET_tf(numInput=(numInput,3), numOutput=numOutput)
     player2.model = keras.models.load_model('code/networks/network_50OHT.keras')
     player3 = ANET_tf(numInput=(numInput,3), numOutput=numOutput)
     player3.model = keras.models.load_model('code/networks/network_100OHT.keras')
     player4 = ANET_tf(numInput=(numInput,3), numOutput=numOutput)
-    player4.model = keras.models.load_model('code/networks/network_130OHT.keras')
+    player4.model = keras.models.load_model('code/networks/network_130OHT.keras')"""
+    player1 = ANET_tf(numInput=(numInput,3), numOutput=numOutput)
+    player1.model = keras.models.load_model('code/networks/network_0TOPP.keras')
+    player2 = ANET_tf(numInput=(numInput,3), numOutput=numOutput)
+    player2.model = keras.models.load_model('code/networks/network_30TOPP.keras')
+    player3 = ANET_tf(numInput=(numInput,3), numOutput=numOutput)
+    player3.model = keras.models.load_model('code/networks/network_90TOPP.keras')
+    player4 = ANET_tf(numInput=(numInput,3), numOutput=numOutput)
+    player4.model = keras.models.load_model('code/networks/network_150TOPP.keras')
     networks=[player1, player2, player3, player4]
     topp = TOPP(networks=networks, game=game)
     topp.tournament(numberOfRounds=CONFIG.get('TOPPGames'))
@@ -34,7 +42,7 @@ def shortTopp(game):
     plt.bar([1,2,3,4], topp.score, color='blue')
     plt.xlabel('players')
     plt.ylabel('wins')
-    plt.title('_/150')
+    plt.title(f'_/{CONFIG.get("TOPPGames")*6}')
     plt.grid(True)  # Add grid lines for better readability
     plt.show()
     pass
@@ -46,6 +54,6 @@ if __name__ == "__main__":
     tree = mct
     actualGame=game(boardSize=CONFIG.get('boardSize'))
     system = rl_system(game=actualGame, gameMaker=game, netMaker=net, treeMaker=tree)
-    trainNetworks(filename="TOPP", system=system)
+    trainNetworks(filename="testSPace", system=system)
     #shortTopp(actualGame)
     pass

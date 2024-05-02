@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from keras.models import Model
 from keras.layers import Input, Conv1D, Add, ReLU, Dense, Flatten
-from Code.CONFIG import CONFIG
+from CONFIG import CONFIG
 
 class ANET_tf(tf.keras.Model):
     def __init__(self, numInput=CONFIG.get('numInput'),
