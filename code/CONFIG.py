@@ -6,8 +6,8 @@ CONFIG = {}
 CONFIG['boardSize'] = 4
 
 #MCTS parameters
-CONFIG['episodes'] = 3
-CONFIG['sims'] = 3
+CONFIG['episodes'] = 200
+CONFIG['sims'] = 100
 
 #Neural network
 CONFIG['numInput'] = (16, 3)
@@ -32,6 +32,6 @@ CONFIG['learningRate'] = 0.001"""
 
 #System parameters
 CONFIG['trainingEpochs'] = 8 #dont necessarily need
-CONFIG['intervalSave'] = 1
-CONFIG['TOPPGames'] = 25
+CONFIG['intervalSave'] = 50
+CONFIG['TOPPGames'] = 1
 

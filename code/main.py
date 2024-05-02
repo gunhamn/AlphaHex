@@ -27,13 +27,13 @@ def shortTopp(game):
     player4 = ANET_tf(numInput=(numInput,3), numOutput=numOutput)
     player4.model = keras.models.load_model('code/networks/network_130OHT.keras')"""
     player1 = ANET_tf(numInput=(numInput,3), numOutput=numOutput)
-    player1.model = keras.models.load_model('code/networks/network_0TOPP.keras')
+    player1.model = keras.models.load_model('code/TestSpace/network_50testSPace.keras')
     player2 = ANET_tf(numInput=(numInput,3), numOutput=numOutput)
-    player2.model = keras.models.load_model('code/networks/network_30TOPP.keras')
+    player2.model = keras.models.load_model('code/TestSpace/network_100testSPace.keras')
     player3 = ANET_tf(numInput=(numInput,3), numOutput=numOutput)
-    player3.model = keras.models.load_model('code/networks/network_90TOPP.keras')
+    player3.model = keras.models.load_model('code/TestSpace/network_150testSPace.keras')
     player4 = ANET_tf(numInput=(numInput,3), numOutput=numOutput)
-    player4.model = keras.models.load_model('code/networks/network_150TOPP.keras')
+    player4.model = keras.models.load_model('code/TestSpace/network_200testSPace.keras')
     networks=[player1, player2, player3, player4]
     topp = TOPP(networks=networks, game=game)
     topp.tournament(numberOfRounds=CONFIG.get('TOPPGames'))
@@ -54,6 +54,6 @@ if __name__ == "__main__":
     tree = mct
     actualGame=game(boardSize=CONFIG.get('boardSize'))
     system = rl_system(game=actualGame, gameMaker=game, netMaker=net, treeMaker=tree)
-    trainNetworks(filename="testSPace", system=system)
-    #shortTopp(actualGame)
+    #trainNetworks(filename="testSPace", system=system)
+    shortTopp(actualGame)
     pass
