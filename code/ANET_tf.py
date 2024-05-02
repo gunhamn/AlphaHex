@@ -19,13 +19,13 @@ class ANET_tf(tf.keras.Model):
             if optimizer.lower() == 'adam':
                 self.optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
             elif optimizer.lower() == 'rmsprop':
-                self.optimizers.append(tf.keras.optimizers.RMSprop(learning_rate=learning_rate))
+                self.optimizer = tf.keras.optimizers.RMSprop(learning_rate=learning_rate)
             elif optimizer.lower() == 'adagrad':
-                self.optimizers.append(tf.keras.optimizers.Adagrad(learning_rate=learning_rate))
+                self.optimizer = tf.keras.optimizers.Adagrad(learning_rate=learning_rate)
             elif optimizer.lower() == 'adamax':
-                self.optimizers.append(tf.keras.optimizers.Adamax(learning_rate=learning_rate))
+                self.optimizer = tf.keras.optimizers.Adamax(learning_rate=learning_rate)
             elif optimizer.lower() == 'nadam':
-                self.optimizers.append(tf.keras.optimizers.Nadam(learning_rate=learning_rate))
+                self.optimizer = tf.keras.optimizers.Nadam(learning_rate=learning_rate)
             else: #default optimizer
                 self.optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
         if layers is not None:
